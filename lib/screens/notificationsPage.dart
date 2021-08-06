@@ -53,8 +53,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     trailing: ElevatedButton(
                       onPressed: ()async {
                         addFriend(notifications[index]);
-                        await FirebaseDatabase.instance.reference().child("notifications").child(currentUser["id"]).child(notifications[index]["id"]).remove();
-                        setState((){ text[index] = "Message";});
+                        await FirebaseDatabase.instance.reference().child("notifications").child(currentUser["id"]).child(notifications[index]["id"]).remove();                       
+                        setState((){ friendAdded = true; text[index] = "Message";});
                       },
                       child: Text( text[index], style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                       style: ButtonStyle(

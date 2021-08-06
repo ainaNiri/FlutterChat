@@ -1,8 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/models/chatMessageModel.dart';
 import 'package:myapp/widgets/conversationList.dart';
 import '../models/chatUsersModel.dart';
+import 'package:provider/provider.dart';
 
 class ChatPage extends StatefulWidget{
   
@@ -35,33 +37,30 @@ class _ChatPageState extends State<ChatPage>{
             ),
             SizedBox(height: 15.0,),
             Container(
-              child: StreamBuilder(
+              child: !friendAdded ? StreamBuilder(
                 stream:FirebaseDatabase.instance.reference().child('users').child(currentUser['id']).child("friends").onValue,
                 builder:(context, AsyncSnapshot<Event> snapshot){        
                   if (snapshot.hasData) {
-                    //var lists = context.read<LastMessage>();
+                    chatPagefirstRendering = true;
+                    friendAdded = false;
                     if(snapshot.data!.snapshot.value != null){
                       //lists.clear();
                       friend = snapshot.data!.snapshot.value;
                       friend.forEach((key, value) {
                         friend[key]['id'] = key;
                       });
-                      // print(value1);
-                      // value1.forEach((key, value){
-                      //   if(value['lastMessages']['content'].startsWith("https") )
-                      //     value['lastMessages']['content'] = "Photo";
-                      //   lists.add(key.toString(), value);
-                      // });
-                    }       
                     return ConversationList(
                       range: friend.length,
                       person: friend,
                     );
-                  }
+                  }}
                   return Center(child: CircularProgressIndicator(),);
                 }
-              )
-            )
+              ) : ConversationList(
+                  range: friend.length,
+                  person: friend,
+                )
+            ) 
           ]
         )
       )   

@@ -5,6 +5,8 @@ Map<dynamic, dynamic> currentUser = ({
 });
 
 bool firstRendering = true;
+bool chatPagefirstRendering = false;
+bool friendAdded = false;
 
 Map<dynamic, dynamic> friend = Map();
 

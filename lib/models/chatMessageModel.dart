@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 // class Friends {
 //   Map<dynamic, dynamic> _friends = Map();
 
@@ -39,7 +40,8 @@
 //      _friends[index]['lastMessages']["time"] = data;
 //   }
 
-  bool isFriend(String name, Map lists){
+
+bool isFriend(String name, Map lists){
     bool friend = false;
     lists.forEach((key, value) {
       if(value['name'] == name)
@@ -66,3 +68,4 @@
 //     notifyListeners();
 //   }
  }
+ 

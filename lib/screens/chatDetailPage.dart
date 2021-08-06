@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:image_picker/image_picker.dart';
 import 'package:myapp/models/chatUsersModel.dart';
@@ -81,22 +82,25 @@ class _ChatDetailPage extends State<ChatDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_needsScroll) {
-    WidgetsBinding.instance!.addPostFrameCallback(
-      (_) {if(_controller.hasClients){
-        _controller.animateTo(
-        _controller.position.maxScrollExtent,
-        duration: Duration(seconds: 1),
-        curve: Curves.fastOutSlowIn,);
-      }});
-    _needsScroll = false;
-  }
+     if (_needsScroll) {
+      Future.delayed(Duration(microseconds: 
+      500),(){
+      WidgetsBinding.instance!.addPostFrameCallback(
+        (_) {if(_controller.hasClients){
+          _controller.animateTo(
+          _controller.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.fastOutSlowIn,);
+        }});});
+      _needsScroll = false;
+    }
     if(currentUser['id'].compareTo(widget.id) < 0)
       _id = currentUser['id'] + widget.id;
     else
       _id = widget.id + currentUser['id'];
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
         appBar: AppBar(
           elevation: 0,
           automaticallyImplyLeading: false,
@@ -144,11 +148,13 @@ class _ChatDetailPage extends State<ChatDetailPage> {
             )
           ),
         ),
-        body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height-85,
-          child: Column(children: <Widget>[
-            Expanded(                    
+        body: KeyboardVisibilityBuilder(
+          builder: (context, isKeyboardVisible){
+          return  Container(
+          height: MediaQuery.of(context).size.height,
+          child: Stack(children: <Widget>[
+            Container(    
+              height: isKeyboardVisible ?  MediaQuery.of(context).size.height/2 : MediaQuery.of(context).size.height-70,                 
                 child: StreamBuilder(
                   stream:FirebaseDatabase.instance.reference().child('messages').child(_id).onValue,
                   builder: (context, AsyncSnapshot<Event> snapshot) {
@@ -256,14 +262,15 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                           if(messages[index]["userSender"] == currentUser['name']){ return Align(
                             alignment: Alignment.topRight,
                             child: Card(
-                              margin: EdgeInsets.only(right: 5.8, top: 10),
+                              margin: EdgeInsets.only(right: 5.8, top: 20),
                               color: Colors.lightBlue.shade200,
                               shadowColor: Colors.black54,
-                              elevation: 3, 
+                              elevation: 3,
+                              shape:  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), 
                               child: Container(
                                 padding: EdgeInsets.all(15),
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                                  maxWidth: MediaQuery.of(context).size.width * 0.5,
                                 ),
                                 child: Text(
                                   messages[index]["content"],
@@ -278,12 +285,13 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                             child: Card(
                               shadowColor: Colors.black54,
                               color: Colors.grey.shade300,
-                              margin: EdgeInsets.only(left: 5.8, top: 10),
+                              shape:  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), 
+                              margin: EdgeInsets.only(left: 5.8, top: 20),
                               elevation: 3, 
                               child: Container(
                                 padding: EdgeInsets.all(15),
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                                  maxWidth: MediaQuery.of(context).size.width * 0.5,
                                 ),
                                 child: Text(
                                   messages[index]["content"],
@@ -326,6 +334,10 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                     ),
                     Expanded(
                       child: TextField(
+                        onTap: (){
+                          _needsScroll = true;
+                          setState((){});             
+                        },
                         decoration: InputDecoration(
                           hintText: "Write message...",
                           hintStyle: TextStyle(color: Colors.black54),
@@ -338,9 +350,11 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                     FloatingActionButton(
                         onPressed: ()async{
                           if(messageController.text.isNotEmpty){
-                            _needsScroll = true;
-                            await addData(messageController.text);                      
+                            await addData(messageController.text);                     
                             messageController.text = "";
+                            setState((){
+                              _needsScroll = true;
+                            });
                           }
                         },
                         child: Icon(Icons.send, color: Colors.white, size: 18),
@@ -352,7 +366,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
               )
             ]
           )
-        )
+        );}
       )
     );
   }

@@ -1,6 +1,8 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/chatMessageModel.dart';
+import 'package:myapp/models/chatUsersModel.dart';
 import 'package:provider/provider.dart';
 import '../screens/chatDetailPage.dart';
 
@@ -13,7 +15,7 @@ class ConversationList extends StatelessWidget{
   String userName = "";
   String userImage = "";
   String messageContent = "";
-  String messageTime = "";
+  String messageTime= "";
 
   @override
   Widget build(BuildContext context){
@@ -94,8 +96,13 @@ class ConversationList extends StatelessWidget{
                                     children: <Widget>[
                                       Text(userName, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),                                     
                                       SizedBox(height: 6),
-                                      Text(messageContent, style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.normal )),
-                                    ],                                 
+                                      Container(
+                                        constraints: BoxConstraints(maxHeight: 16, maxWidth: MediaQuery.of(context).size.width/2),
+                                        child: Text(
+                                          messageContent, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.normal )
+                                        )                                                                                       
+                                      )                                                                     
+                                  ],                                 
                                 )
                               )
                             )
@@ -103,12 +110,13 @@ class ConversationList extends StatelessWidget{
                         )
                       ),
                       Text(
-                        DateTime.parse(messageTime).hour.toString() + " : " + DateTime.parse(messageTime).minute.toString(),
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal))                                                         
-                    ]
-                  )
+                          DateTime.parse(messageTime).hour.toString() + " : " + DateTime.parse(messageTime).minute.toString(),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal)
+                        )                                                                            
+                    ] 
+                  
                 )
-              );
+              ));
             }
           )
         )
