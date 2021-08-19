@@ -1,7 +1,8 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/models/chatUsersModel.dart';
+import 'package:myapp/models/constants.dart';
+import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/screens/profilePage.dart';
+import 'package:provider/provider.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({ Key? key }) : super(key: key);
@@ -14,69 +15,66 @@ class _FriendsPageState extends State<FriendsPage> {
 
   @override
   Widget build(BuildContext context) {
+    var _friends = context.watch<FriendsModel>();
     return Scaffold(
+      backgroundColor: kPrimaryColor,
       body: Container(
         child: Column(
           children: <Widget>[
             Center(
               child: Container(
                 margin: EdgeInsets.only(top: 15, bottom: 15),
-                child: Text("Friends", style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold, fontSize: 30)),
+                child: Text("Friends", style: TextStyle(color: textSecondaryColor, fontWeight: FontWeight.bold, fontSize: 30)),
               )
             ),
-            chatPagefirstRendering ?      
+            !_friends.isEmpty() ?   
                 Container(
                 padding: EdgeInsets.all(10),
                 margin: EdgeInsets.only(top: 5),
                 child: ListView.builder(
-                  itemCount: friend.length,
+                  itemCount: _friends.length(),
                   shrinkWrap: true,
                   itemBuilder: (context, index){
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(friend[friend.keys.elementAt(index)]["image"]),
-                        radius: 25,
-                      ),
-                      title: Text(friend[friend.keys.elementAt(index)]["name"]),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: friend[friend.keys.elementAt(index)], friend: "Message"))
-                      )
-                    );
+                    if(_friends.friends[index].id.isNotEmpty)
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(_friends.friends[index].image),
+                          radius: 25,
+                        ),
+                        title: Text(_friends.friends[index].name, style: TextStyle(color: textPrimaryColor)),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: _friends.friends[index].toUser(), friend: "Message"))
+                        )
+                      );
+                    else return Container();
                   },
                 )
-             ) : StreamBuilder(
-                stream:FirebaseDatabase.instance.reference().child('users').child(currentUser['id']).child("friends").onValue,
-                builder:(context, AsyncSnapshot<Event> snapshot){        
-                  if (snapshot.hasData) {
-                    chatPagefirstRendering = true;
-                    //var lists = context.read<LastMessage>();
-                    if(snapshot.data!.snapshot.value != null){
-                      //lists.clear();
-                      friend = snapshot.data!.snapshot.value;
-                      friend.forEach((key, value) {
-                        friend[key]['id'] = key;
-                      });
-                    }
+             ) :Consumer<FriendsModel>(
+                builder:(context, model, child){        
+                  if(!model.isEmpty()){
                     return ListView.builder(
-                      itemCount: friend.length,
+                      itemCount: model.length(),
                       shrinkWrap: true,
                       itemBuilder: (context, index){
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(friend[friend.keys.elementAt(index)]["image"]),
-                            radius: 25,
-                          ),
-                          title: Text(friend[friend.keys.elementAt(index)]["name"]),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: friend[friend.keys.elementAt(index)], friend: "Message"))
-                          )
-                        );
+                        if(_friends.friends[index].id.isNotEmpty)
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(model.friends[index].image),
+                              radius: 25,
+                            ),
+                            title: Text(model.friends[index].name, style: TextStyle(color: textPrimaryColor)),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: model.friends[index].toUser(), friend: "Message"))
+                            )
+                          );
+                        else return Container();
                       },
                     );
                   }
-                  return Container();               
+                  else
+                    return Container();               
                 }             
              )
           ]

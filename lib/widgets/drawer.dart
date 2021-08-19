@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/actualityPage.dart';
+import 'package:myapp/screens/settingPage.dart';
 
 class BuildDrawer extends StatelessWidget {
   const BuildDrawer({ Key? key }) : super(key: key);
@@ -43,6 +44,10 @@ class BuildDrawer extends StatelessWidget {
               }
             ),
             ListTile(
+              onTap: () => Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => SettingPage())
+              ),
               leading: Icon(Icons.settings),
               title: Text('Settings'),
             ),

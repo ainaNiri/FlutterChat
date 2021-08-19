@@ -1,12 +1,37 @@
-Map<dynamic, dynamic> currentUser = ({
-  'name': "",
-  'id': "",
-  'image':""
-});
+class User{
+  String id;
+  String image;
+  String name;
 
-bool firstRendering = true;
-bool chatPagefirstRendering = false;
-bool friendAdded = false;
+  User({ required this.id, required this.image, required this.name});
+}
 
-Map<dynamic, dynamic> friend = Map();
+User currentUser = new User(
+  id: "",
+  name:"",
+  image:""
+
+);
+
+class Friend  {
+  String id;
+  String image;
+  String chatId;
+  String name;
+  String lastMessageContent;
+  String lastMessageTime;
+  String lastMessageType;
+
+  Friend({required this.id, required this.chatId, required this.image, required this.name, required this.lastMessageContent, required this.lastMessageTime, required this.lastMessageType});
+
+  User toUser(){
+    return User(
+      id: id,
+      name: name,
+      image: image
+    );
+  }
+
+}
+
 

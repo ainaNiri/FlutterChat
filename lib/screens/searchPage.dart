@@ -1,8 +1,9 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/models/chatMessageModel.dart';
 import 'package:myapp/models/chatUsersModel.dart';
+import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/screens/profilePage.dart';
+import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
 
@@ -13,7 +14,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
 
   String _searchText = "";
-  List <Map> filteredNames = [];
+  List <User> filteredNames = [];
   TextEditingController _filter = TextEditingController();
 
   _function() {
@@ -28,6 +29,16 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  int isFriend(String name, FriendsModel friends){
+    for(int i = 0; i < friends.length(); i++){
+      if(friends.friends[i].name == name)
+        {
+          return i;         
+        }
+    }
+    return -1;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -35,15 +46,16 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget build(BuildContext context) {
+    var _friends = context.watch<FriendsModel>();
     return Scaffold(
       appBar: _buildBar(context),
       body: Container(
-        child: _buildList(),
+        child: _buildList(_friends),
       ),
     );
   }
 
-  Widget _buildList() {
+  Widget _buildList(FriendsModel friends) {
     if (_searchText.isNotEmpty) {
       return FutureBuilder(
         future: FirebaseDatabase.instance.reference().child('users').orderByChild('name').once(),
@@ -53,18 +65,24 @@ class _SearchPageState extends State<SearchPage> {
             filteredNames.clear();
             values.forEach((key, value) {
               if(value['user']['name'].toLowerCase().contains(_searchText.toLowerCase()))
-                filteredNames.add(value['user']);
+                filteredNames.add(User(
+                  id: value['user']['id'],
+                  name: value['user']['name'],
+                  image: value['user']['image'],
+                )
+                );
             });           
             filteredNames.shuffle();
             return ListView.builder(
               itemCount: filteredNames.isEmpty ? 0 : filteredNames.length,
               itemBuilder: (BuildContext context, int index) {
+                int friendId = isFriend(filteredNames[index].name, friends);
                 return Column(children: <Widget>[
                   ListTile(
                     dense: false,
-                    title: Text(filteredNames[index]['name']),
-                    trailing: IconButton(onPressed: (){}, icon:  isFriend(filteredNames[index]['name'], friend) ? Icon(Icons.message_sharp): (filteredNames[index]['name'].toLowerCase() == currentUser['name'].toLowerCase() ? Icon(Icons.account_box_rounded) : Icon(Icons.person_add))),
-                    onTap: (){if(filteredNames[index]['name'].toLowerCase() != currentUser['name'].toLowerCase() && !isFriend(filteredNames[index]['name'], friend)){ 
+                    title: Text(filteredNames[index].name),
+                    trailing: IconButton(onPressed: (){}, icon:  (friendId != -1) ? Icon(Icons.message_sharp): (filteredNames[index].name.toLowerCase() == currentUser.name.toLowerCase() ? Icon(Icons.account_box_rounded) : Icon(Icons.person_add))),
+                    onTap: (){if(filteredNames[index].name.toLowerCase() != currentUser.name.toLowerCase() &&  (friendId == -1)){ 
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context){
@@ -74,10 +92,11 @@ class _SearchPageState extends State<SearchPage> {
                             }
                           )
                       );}
-                      else if (isFriend(filteredNames[index]['name'], friend)){
+                      else if (friendId != 1){
                         Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context){ return ProfilePage(
+                          chatId: friends.friends[friendId].chatId,
                           icon: Icon(Icons.message),
                           person: filteredNames[index],
                           friend: "Message");})
