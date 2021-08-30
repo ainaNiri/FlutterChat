@@ -36,3 +36,11 @@ Color getColor(Set<MaterialState> states) {
     }
     return Colors.indigo.shade600;
 }
+
+ButtonStyle buttonStyle = ButtonStyle(
+  shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
+  backgroundColor: MaterialStateProperty.resolveWith(getColor),
+  foregroundColor: MaterialStateProperty.all(Colors.white),
+  fixedSize: MaterialStateProperty.all(Size(300, 50)),
+  textStyle: MaterialStateProperty.all(TextStyle(fontSize: 18))
+);

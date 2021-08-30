@@ -1,8 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/chatUsersModel.dart';
-import 'package:myapp/models/constants.dart';
-import 'package:myapp/models/friendModel.dart';
+import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/screens/FriendsPage.dart';
 import 'package:myapp/customIcon/app_icons.dart';
 import 'package:myapp/screens/notificationsPage.dart';
@@ -10,7 +9,6 @@ import 'package:myapp/screens/profilePage.dart';
 import 'package:myapp/widgets/appBar.dart';
 import 'package:myapp/widgets/chatPage.dart';
 import 'package:myapp/widgets/drawer.dart';
-import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class ActualityPage extends StatefulWidget{
@@ -25,24 +23,26 @@ class _ActualityPage extends State<ActualityPage>{
 
   int notificationCounter = 2;
   static  List<Widget> _widgetOptions = <Widget>[
-    ChangeNotifierProvider<FriendsModel>(create: (_) => FriendsModel(), child: ChatPage()),
-    ChangeNotifierProvider<FriendsModel>(create: (_) => FriendsModel(), child: FriendsPage()),
+    ChatPage(),
+    FriendsPage(),
     ProfilePage(icon: Icon(Icons.person), person: currentUser),
     NotificationsPage(),    
   ];
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: kPrimaryColor,
       appBar: buildAppBar(
-        context
+        context,
+        _scaffoldKey
       ),
-      drawer: BuildDrawer(
-
-      ),
+      drawer: buildDrawer(context),
       body: _widgetOptions.elementAt(widget.index ?? 0),
       bottomNavigationBar: BottomNavigationBar(
+        elevation: 10,
         unselectedItemColor: darkMode ? Colors.white : Colors.black,
         selectedLabelStyle: TextStyle(fontWeight: FontWeight.w800),
         items: <BottomNavigationBarItem>[
@@ -69,7 +69,7 @@ class _ActualityPage extends State<ActualityPage>{
                   top: 2.0,
                   right: 2.0,
                   child: StreamBuilder(
-                    stream:FirebaseDatabase.instance.reference().child('notifications').child(currentUser.id).child("number").onValue,
+                    stream:FirebaseDatabase.instance.reference().child('notifications').child("sendBy").child(currentUser.id).child("number").onValue,
                     builder:(context, AsyncSnapshot<Event> event){        
                       if (event.hasData) {
                         if(event.data!.snapshot.value != null){

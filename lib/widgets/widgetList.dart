@@ -1,7 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/chatUsersModel.dart';
-import 'package:myapp/models/constants.dart';
+import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/models/listModel.dart';
 import 'package:provider/provider.dart';
 
@@ -10,8 +10,9 @@ class WidgetOption extends StatefulWidget{
   int index;
   IconData icon;
   String section;
+  bool isMe;
 
-  WidgetOption({required this.index, required this.icon, required this.section});
+  WidgetOption({required this.index, required this.icon, required this.section, required this.isMe});
   
   @override
   _WidgetOptionState createState() => _WidgetOptionState();
@@ -27,13 +28,13 @@ class _WidgetOptionState extends State<WidgetOption>{
   void initState() {
     super.initState();
     _isStart
-        ? Future.delayed(Duration(milliseconds: widget.index * 100), () {
-            setState(() {
-              _animate = true;
-              //_isStart = false;
-            });
-          })
-        : _animate = true;
+      ? Future.delayed(Duration(milliseconds: widget.index * 100), () {
+          setState(() {
+            _animate = true;
+            //_isStart = false;
+          });
+        })
+      : _animate = true;
   }
 
   @override
@@ -56,7 +57,7 @@ class _WidgetOptionState extends State<WidgetOption>{
           elevation: 1,
           color: kSecondaryColor, 
           child: Container(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.fromLTRB(20, 20, 7, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -65,9 +66,10 @@ class _WidgetOptionState extends State<WidgetOption>{
                   children: <Widget>[
                     Icon(widget.icon, color: iconSecondaryColor,),
                     SizedBox(width: 10,),
-                    Expanded(child: Text(widget.section, style: TextStyle(color: textPrimaryColor,fontWeight: FontWeight.w500, fontSize: 25))),
-                    IconButton(icon: Icon(Icons.edit),color: iconSecondaryColor, onPressed: () =>
-                        showBottomSheet(context: context, builder: (ctx) => buildEditPage(ctx, widget.section))                  
+                    Expanded(child: Text(widget.section, style: TextStyle(color: textPrimaryColor,fontWeight: FontWeight.w300, fontSize: 25))),
+                    if(widget.isMe)
+                      IconButton(icon: Icon(Icons.edit),color: iconSecondaryColor, onPressed: () =>
+                        showBottomSheet(context: context, builder: (ctx) => _buildEditPage(ctx, widget.section))                  
                     )
                   ]
                 ),
@@ -80,9 +82,10 @@ class _WidgetOptionState extends State<WidgetOption>{
      );
   }
 
-  Widget buildEditPage(BuildContext context, String section) {
+  Widget _buildEditPage(BuildContext context, String section) {
     TextEditingController _inputController = TextEditingController();
     return Container(
+      color: kPrimaryColor,
       padding: EdgeInsets.all(15),
       height: 450,
       child: Column(
@@ -94,7 +97,11 @@ class _WidgetOptionState extends State<WidgetOption>{
             maxLines: 3,
             decoration: InputDecoration(
               labelText: "${widget.section}...",
+              labelStyle: TextStyle(color: textSecondaryColor),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: textPrimaryColor)),
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: textPrimaryColor))  
             ),
+            style: TextStyle(color: textPrimaryColor),
           ),
           SizedBox(height: 30,),
           ElevatedButton(

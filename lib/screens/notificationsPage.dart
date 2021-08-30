@@ -1,7 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/chatUsersModel.dart';
-import 'package:myapp/models/constants.dart';
+import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/screens/profilePage.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -32,14 +32,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
       body: Container(
         padding: EdgeInsets.all(10),
         margin: EdgeInsets.only(top: 5),
-        child: StreamBuilder(
-          stream: FirebaseDatabase.instance.reference().child("notifications").child(currentUser.id).onValue,
-          builder: (context, AsyncSnapshot<Event> snapshot){
-            if(snapshot.hasData){
-              if(snapshot.data!.snapshot.value != null){
+        child: FutureBuilder(
+          future: FirebaseDatabase.instance.reference().child("notifications").child("sendBy").child(currentUser.id).once(),
+          builder: (context, AsyncSnapshot<DataSnapshot> snapshot){
+            if(snapshot.connectionState == ConnectionState.done){
+              if(snapshot.data!.value != null){
                 notifications.clear();
                 text.clear();
-                Map<dynamic, dynamic> friends = snapshot.data!.snapshot.value;
+                Map<dynamic, dynamic> friends = snapshot.data!.value;
                 friends.forEach((key, value) {
                   if(key != "number"){
                     notifications.add(User(
@@ -51,7 +51,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     text.add("Accept");
                   }
                 });
-              }
               return ListView.builder(
                 itemCount: notifications.length,
                 shrinkWrap: true,
@@ -69,18 +68,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     trailing: ElevatedButton(
                       onPressed: ()async {
                         addFriend(notifications[index]);
-                        await FirebaseDatabase.instance.reference().child("notifications").child(currentUser.id).child(notifications[index].id).remove();
-                        await FirebaseDatabase.instance.reference().child("user_notifications").child(notifications[index].id).child(currentUser.id).remove();                       
+                        await FirebaseDatabase.instance.reference().child("notifications/sendBy").child(currentUser.id).child(notifications[index].id).remove();
+                        await FirebaseDatabase.instance.reference().child("notifications/sendTo").child(notifications[index].id).child(currentUser.id).remove();                       
                         setState((){text[index] = "Message";});
                       },
                       child: Text( text[index], style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                      style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.resolveWith(getColor),
-                      )
+                      style: buttonStyle
                     ),
                   );
                 },
-              );
+              );}
+              return Container();
             }
             return Center(child: CircularProgressIndicator.adaptive());
           }
@@ -92,7 +90,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void addFriend(User friend) async{
     late String chatId;
     final chatRef = FirebaseDatabase.instance.reference().child("chats");
-    final userRef =  FirebaseDatabase.instance.reference().child("user_friends");
+    final userRef =  FirebaseDatabase.instance.reference().child("users/users_friends");
 
     chatId = chatRef.child("chatsroom").push().key; 
     await chatRef.child("chatsroom").child(chatId).set({

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/models/constants.dart';
+import 'package:myapp/utilities/constants.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({ Key? key }) : super(key: key);
@@ -48,7 +48,7 @@ class _SettingPageState extends State<SettingPage> {
                       setState((){
                         this._switchVal = value;
                         kPrimaryColor = Colors.black87;
-                        kSecondaryColor = Colors.black38;
+                        kSecondaryColor = Colors.white10;
                         textPrimaryColor = Colors.white;
                         textSecondaryColor = Colors.grey.shade200;
                         iconColor = Colors.white70;

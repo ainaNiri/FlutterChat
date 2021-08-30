@@ -1,9 +1,12 @@
+import 'package:myapp/models/chatMembersModel.dart';
+
 class User{
   String id;
   String image;
   String name;
 
   User({ required this.id, required this.image, required this.name});
+
 }
 
 User currentUser = new User(
@@ -30,6 +33,12 @@ class Friend  {
       name: name,
       image: image
     );
+  }
+
+  bool isInChat(ChatMembersModel chatMembers){
+    if(chatMembers.members.where((element) => element.id == this.id).isNotEmpty)
+      return true;
+    return false;
   }
 
 }

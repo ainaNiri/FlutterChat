@@ -1,17 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:myapp/models/function.dart';
-import 'package:path/path.dart' as path;
+import 'package:myapp/utilities/function.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/screens/actualityPage.dart';
-import 'package:myapp/models/constants.dart';
+import 'package:myapp/utilities/constants.dart';
 import 'dart:io';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
-final _formKey = GlobalKey<FormState>();
 
 class SignInAndRegisterPage extends StatefulWidget {
 
@@ -38,6 +35,14 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
 
   late File _image;
   final picker = ImagePicker();
+  OutlineInputBorder border = OutlineInputBorder(
+    borderSide: BorderSide(width: 1, color: inputColor),
+    borderRadius: BorderRadius.circular(25),
+  );
+
+  bool _error1 = false;
+  bool _error2 = false;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -85,11 +90,11 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
                       child: Column(
                       children: <Widget>[
                         SizedBox(height: signIn ? 70 : 35,),
-                          _buildInput("Email",Icons.mail_outlined, emailController),
+                          _buildInput("Email",Icons.mail_outlined, emailController, true),
                           if(!signIn)
                             SizedBox(height: 20,),
                           if(!signIn)
-                            _buildInput("Name",Icons.person_outlined,  nameController),
+                            _buildInput("Name",Icons.person_outlined,  nameController, false),
                           SizedBox(height: 20,),
                           TextFormField(
                             style: TextStyle(color: Colors.black),
@@ -97,6 +102,8 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
                               if(value!.isEmpty){
                                 return "Please enter a password";
                               }
+                              else if(_error2)
+                                return "Wrong password";
                               
                               return null;
                             },
@@ -105,14 +112,10 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: inputColor,
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: inputColor),
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(width: 1, color: inputColor),
-                                borderRadius: BorderRadius.circular(25),
-                              ),
+                              enabledBorder: border,
+                              focusedBorder: border,
+                              errorBorder: border,
+                              focusedErrorBorder: border,
                               prefixIcon: Icon(Icons.security_outlined, color: iconColor),
                               hintText: "Password",
                               hintStyle: TextStyle(color: Colors.grey[400]),                                     
@@ -150,19 +153,18 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
                           SizedBox(height: 25),
                           ElevatedButton.icon(
                             onPressed: () async {
-                              final snackBar = SnackBar(
-                                content : Text("Process data ... ")
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                              signIn ? _signIn() : _register();                  
+                              // final snackBar = SnackBar(
+                              //   content : Text("Process data ... ")
+                              // );
+                              // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              signIn ? await _signIn() : await _register();
+                              if (_formKey.currentState!.validate()) {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
+                              }                  
                             },
                             icon: Icon(Icons.login_outlined, color: Colors.white,), 
                             label: Text(signIn ? "Login" : "Register", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-                            style: ButtonStyle(
-                              shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
-                              backgroundColor: MaterialStateProperty.resolveWith(getColor),
-                              fixedSize: MaterialStateProperty.all(Size(350, 50))
-                            )
+                            style: buttonStyle
                           ),
                           SizedBox(height: 20,),
                           if(signIn)Row(
@@ -191,22 +193,34 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
     );
   }
 
-  Widget _buildInput(String text, IconData icon, TextEditingController controller)
+  Widget _buildInput(String text, IconData icon, TextEditingController controller, bool isforMail)
   {
     return TextFormField(
       style: TextStyle(color: Colors.black),
       controller: controller,
+      validator: (value) {
+        if(isforMail){ 
+          if(value!.isEmpty){
+            return "Please enter an email";
+          }
+          else if(_error1)
+            return "Email not found";
+        }
+        else{
+          if(value!.isEmpty){
+            return "Please enter a name";
+          }
+        }
+        
+        return null;
+      },
       decoration: InputDecoration(
         filled: true,
         fillColor: inputColor,
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(width: 1, color: inputColor),
-          borderRadius: BorderRadius.circular(25),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(width: 1, color: inputColor),
-          borderRadius: BorderRadius.circular(25),
-        ),
+        enabledBorder: border,
+        focusedBorder: border,
+        errorBorder: border,
+        focusedErrorBorder: border,
         prefixIcon: Icon(icon, color: iconColor),
         hintText: text,
         hintStyle: TextStyle(color: hintColor),
@@ -221,7 +235,7 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
         password: passwordController.text,
       );
       currentUser.id = userCredential.user!.uid;
-      currentUser.image = await uploadPic(_image);
+      currentUser.image = await uploadPic(_image, "profile");
       await _addUser();
       Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
     }on FirebaseAuthException catch (e) {
@@ -231,17 +245,15 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
         print('The account already exists for that email.');
       }
     }
-    // catch(e){
-    // print(e);
-    // }
   }
+
   Future<void> _addUser() async{
-     await FirebaseDatabase.instance.reference().child('users').child(currentUser.id.toString()).child('user').set({
+    await FirebaseDatabase.instance.reference().child('users/users_profile').child(currentUser.id.toString()).set({
       'id': currentUser.id,
       'image': currentUser.image,
       'name': nameController.text}
     );
-    FirebaseDatabase.instance.reference().child('users').child(currentUser.id.toString()).child('about').set({
+    FirebaseDatabase.instance.reference().child('users/users_about').child(currentUser.id.toString()).set({
       'hobby': ' ',
       'location': ' ',
       'profile': ' ',
@@ -256,18 +268,19 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
         password: passwordController.text
       );
       currentUser.id = userCredential.user!.uid;
-      await FirebaseDatabase.instance.reference().child('users').child(currentUser.id.toString()).child('user').once().then((value){currentUser.name = value.value['name'];currentUser.image = value.value['image'];});                    
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));  
+      await FirebaseDatabase.instance.reference().child('users/users_profile').child(currentUser.id).once().then((value){currentUser.name = value.value['name'];currentUser.image = value.value['image'];});                      
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
+        setState(() {
+          _error1 = true;
+        });
       } else if (e.code == 'wrong-password') {
         print('Wrong password provided for that user.');
+        setState(() {
+          _error2 = true;
+        });
       }
     }
-    catch(e){
-      print(e);
-    }
   }
-
 }

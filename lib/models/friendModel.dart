@@ -6,37 +6,49 @@ import 'package:myapp/models/chatUsersModel.dart';
 
 class FriendsModel extends ChangeNotifier{
   List <Friend> _friends = [];
-  final _db = FirebaseDatabase.instance.reference().child("chats").child("chatsroom");
+  final _db = FirebaseDatabase.instance.reference().child("chats/chatsroom");
 
   late StreamSubscription<Event>_lastMessageStream;
 
   List <Friend> get friends => _friends;
+
 
   FriendsModel() {
     _listenToLastMessage();
   }
 
   Future <void> _listenToLastMessage() async{
-    _lastMessageStream = FirebaseDatabase.instance.reference().child("user_friends").child(currentUser.id).onValue.listen((event) {
-      //print(event.snapshot.key);
+    _lastMessageStream = FirebaseDatabase.instance.reference().child("users/users_friends").child(currentUser.id).onValue.listen((event) {
+      _friends.clear();
       if( event.snapshot.value != null){
-        event.snapshot.value!.forEach((key, value) { 
+        event.snapshot.value!.forEach((key, value) {
+          _friends.add(new Friend(id:" ", chatId: value["chatId"], name: " ", image: " ", lastMessageContent: " ", lastMessageTime: DateTime.now().toString(), lastMessageType: " "));
           _db.child(value["chatId"]).onValue.listen((snapshot) {
-            _friends.clear();
-            _friends.add(Friend(
-              id: key,
-              chatId: snapshot.snapshot.key!,
-              name: value["name"],
-              image:  value["image"],
-              lastMessageContent: snapshot.snapshot.value["lastMessage"],
-              lastMessageTime: snapshot.snapshot.value["timestamp"],
-              lastMessageType: "read"
-            ));
+            int index = whereChatId(value["chatId"].toString());
+            if(value["name"] == null){             
+              _friends[index].id = key;
+              _friends[index].chatId = snapshot.snapshot.key!;
+              _friends[index].name = snapshot.snapshot.value["name"];
+              _friends[index].image =  snapshot.snapshot.value["image"];
+              _friends[index].lastMessageContent = snapshot.snapshot.value["lastMessage"];
+              _friends[index].lastMessageTime = snapshot.snapshot.value["timestamp"];
+              _friends[index].lastMessageType = "read";
+            }
+            else {
+              _friends[index].id = key;
+              _friends[index].chatId= snapshot.snapshot.key!;
+              _friends[index].name= value["name"];
+              _friends[index].image=  value["image"];
+              _friends[index].lastMessageContent= snapshot.snapshot.value["lastMessage"];
+              _friends[index].lastMessageTime= snapshot.snapshot.value["timestamp"];
+              _friends[index].lastMessageType= "read";
+            }
             notifyListeners();
           });
         });
       }
     });
+
   }
 
   @override
@@ -53,6 +65,16 @@ class FriendsModel extends ChangeNotifier{
 
   int length(){
     return _friends.length;
+  }
+
+  List <User> toUsers(){
+    return List.generate(_friends.length, (index) {
+      return _friends[index].toUser();
+    });
+  }
+
+  int whereChatId(String chatId){
+    return _friends.indexWhere((element) => element.chatId == chatId);
   }
 }
 

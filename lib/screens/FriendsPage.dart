@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/models/constants.dart';
+import 'package:myapp/models/chatUsersModel.dart';
+import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/screens/profilePage.dart';
+import 'package:myapp/widgets/userList.dart';
 import 'package:provider/provider.dart';
 
 class FriendsPage extends StatefulWidget {
@@ -28,50 +30,14 @@ class _FriendsPageState extends State<FriendsPage> {
               )
             ),
             !_friends.isEmpty() ?   
-                Container(
+              Container(
                 padding: EdgeInsets.all(10),
                 margin: EdgeInsets.only(top: 5),
-                child: ListView.builder(
-                  itemCount: _friends.length(),
-                  shrinkWrap: true,
-                  itemBuilder: (context, index){
-                    if(_friends.friends[index].id.isNotEmpty)
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(_friends.friends[index].image),
-                          radius: 25,
-                        ),
-                        title: Text(_friends.friends[index].name, style: TextStyle(color: textPrimaryColor)),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: _friends.friends[index].toUser(), friend: "Message"))
-                        )
-                      );
-                    else return Container();
-                  },
-                )
-             ) :Consumer<FriendsModel>(
+                child: ListUser(isForSearch: false, users: _friends.toUsers().where((element) => !element.id.startsWith("grp")).toList())
+              ) :Consumer<FriendsModel>(
                 builder:(context, model, child){        
                   if(!model.isEmpty()){
-                    return ListView.builder(
-                      itemCount: model.length(),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index){
-                        if(_friends.friends[index].id.isNotEmpty)
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: NetworkImage(model.friends[index].image),
-                              radius: 25,
-                            ),
-                            title: Text(model.friends[index].name, style: TextStyle(color: textPrimaryColor)),
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: model.friends[index].toUser(), friend: "Message"))
-                            )
-                          );
-                        else return Container();
-                      },
-                    );
+                    return  ListUser(isForSearch: false, users: model.toUsers().where((element) => !element.id.startsWith("grp")).toList());                  
                   }
                   else
                     return Container();               

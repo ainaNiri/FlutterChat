@@ -12,6 +12,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<FriendsModel>(create: (_) => FriendsModel()),
         ChangeNotifierProvider(create: (context) => ListModel()),
       ],
       child: MyApp(),

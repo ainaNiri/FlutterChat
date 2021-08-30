@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/models/constants.dart';
+import 'package:myapp/screens/createChatGroupPage.dart';
+import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/widgets/conversationList.dart';
 import 'package:provider/provider.dart';
@@ -22,33 +23,44 @@ class _ChatPageState extends State<ChatPage>{
       physics: BouncingScrollPhysics(),
       child: Container(
         color: kPrimaryColor,
-        margin: EdgeInsets.all(0),
+        margin: EdgeInsets.only(top: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             SafeArea(
               child: Padding(
-                padding: EdgeInsets.only(left: 16, right: 16, top:10),
+                padding: EdgeInsets.only(left: 16, right: 16, top:15),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text("Conversation", style:TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: textPrimaryColor), ),
+                    Expanded(
+                      child: Text("Conversation", style:TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: textPrimaryColor), )
+                    ),
+                    TextButton.icon(
+                      onPressed: () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => CreateChatGroupPage()) 
+                      ),
+                      icon: Icon(Icons.add, color: Colors.red),
+                      label: Text("Add new", style: TextStyle(color: Colors.red, fontSize: 15)),
+                    )
                   ]
                 )
               )
             ),
-            SizedBox(height: 15.0,),
+            SizedBox(height: 20.0,),
             Container(
               child: chatPagefirstRendering ? Consumer<FriendsModel>(
                 builder: (context, model, child){
-                  chatPagefirstRendering = true;
+                  chatPagefirstRendering = false;
                   if(model.isEmpty())
                     // return Center(child: CircularProgressIndicator());
                     return _buildAlias();                   
                   else 
                     return ConversationList(range: model.length());                  
                 },
-              ) : ConversationList(range: Provider.of<FriendsModel>(context, listen: false).length())                                             
+              ) : ConversationList(range: Provider.of<FriendsModel>(context, listen: true).length())                                             
             )            
           ]
         )

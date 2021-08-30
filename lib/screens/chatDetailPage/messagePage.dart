@@ -1,19 +1,22 @@
 import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:myapp/models/chatMessageModel.dart';
+import 'package:myapp/models/chatMembersModel.dart';
+import 'package:myapp/models/messageModel.dart';
 import 'package:myapp/models/chatUsersModel.dart';
-import 'package:myapp/models/constants.dart';
-import 'package:myapp/models/function.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:myapp/screens/chatDetailPage/optionsPage.dart';
+import 'package:myapp/screens/profilePage.dart';
+import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/function.dart';
+import 'package:myapp/screens/chatDetailPage/addFriendsToChatPage.dart';
+import 'package:myapp/widgets/dialog.dart';
+import 'package:myapp/widgets/hero.dart';
 import 'dart:async';
-import 'dart:typed_data';
-import 'package:dio/dio.dart';
-import 'package:path/path.dart' as path;
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+
+import 'package:provider/provider.dart';
+
 
 // ignore: must_be_immutable
 class ChatDetailPage extends StatefulWidget {
@@ -31,18 +34,6 @@ class _ChatDetailPage extends State<ChatDetailPage> {
   final messageController = TextEditingController();
   final db = FirebaseDatabase.instance.reference();
   bool _needsScroll = false;
-
-  late File _image;
-  late String _url;
-
-  Future<void> uploadPic() async {
-   FirebaseStorage storage =  FirebaseStorage.instance;
-   // ignore: await_only_futures
-   Reference ref = await storage.ref().child("chats/" + widget.id +"/"+path.basename(_image.toString()));
-   UploadTask uploadTask = ref.putFile(_image);
-   _url = await(await uploadTask).ref.getDownloadURL();
-}
-
   
   void initState(){
     super.initState();
@@ -94,9 +85,26 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                   icon: Icon(Icons.arrow_back, color: iconColor),
                 ),
                 SizedBox(width: 2),                 
-                  CircleAvatar(
+                IconButton(
+                  padding: EdgeInsets.all(1),
+                  iconSize: 40,
+                  splashRadius: 30,
+                  icon: CircleAvatar(
                     maxRadius: 25,
                     backgroundImage:NetworkImage(widget.friend.image ),
+                  ),
+                  onPressed: () {
+                    if(widget.id.startsWith("grp"))
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context) => OptionsPage(chatId: widget.id, chatName: widget.friend.name, chatImage:  widget.friend.image))
+                      );
+                    else 
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: widget.friend, friend: "Message", chatId: widget.id,))
+                    );
+                  }
                 ),
                 SizedBox(width: 12),
                 Expanded(
@@ -116,11 +124,27 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                     ]
                   )
                 ),
+                if(widget.id.startsWith("grp"))
+                  IconButton(
+                    onPressed: () => Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => 
+                        ChangeNotifierProvider(create: (_) => 
+                          ChatMembersModel(widget.id) ,child: AddFriendsToChat(chatId: widget.id)
+                        )                       
+                      )
+                    ),
+                    splashRadius: 20.0, 
+                    icon: Icon(Icons.person_add, color: iconColor)
+                  ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () => Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: (context) => OptionsPage(chatId: widget.id, chatName: widget.friend.name, chatImage:  widget.friend.image))
+                  ),
                   splashRadius: 20.0,
-                  icon: Icon(Icons.settings, color: iconColor)
-                  )
+                  icon: Icon(Icons.meeting_room, color: iconColor)
+                )
                 ]
               )
             )
@@ -133,17 +157,18 @@ class _ChatDetailPage extends State<ChatDetailPage> {
           child: Stack(children: <Widget>[
             Container(    
               height: isKeyboardVisible ?  MediaQuery.of(context).size.height/2 : MediaQuery.of(context).size.height-70,                 
-                child: StreamBuilder(
-                  stream:FirebaseDatabase.instance.reference().child('chats').child("messages").child(widget.id).onValue,
-                  builder: (context, AsyncSnapshot<Event> snapshot) {
-                    if (snapshot.hasData){
+              child: StreamBuilder(
+                stream:FirebaseDatabase.instance.reference().child('chats/messages').child(widget.id).onValue,
+                builder: (context, AsyncSnapshot<Event> snapshot) {
+                  if (snapshot.hasData){
                     messages.clear();
                     if(snapshot.data!.snapshot.value != null)
                     {              
                       snapshot.data!.snapshot.value.forEach((key, value){
                         messages.add(new Message(
                           content: value["content"],
-                          sender: value["userSender"]
+                          sender: value["userSender"],
+                          createAt: key.toString().substring(0, 19) + "." + key.toString().substring(19)
                         ));
                       });            
                     }
@@ -157,13 +182,13 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                         {
                           if(messages[index].sender == currentUser.name)
                           {
-                            return buildImage(
+                            return _buildImage(
                               Alignment.bottomRight, 
                               index
                             );
                           }
                           else{
-                            return buildImage(
+                            return _buildImage(
                               Alignment.bottomLeft, 
                               index
                             );
@@ -171,14 +196,14 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                         }
                         else{ 
                           if(messages[index].sender == currentUser.name){ 
-                            return buildMessage(
+                            return _buildMessage(
                               Alignment.bottomRight, 
                               messageUserColor, 
                               messages[index].content
                             );
                           }
                           else{
-                            return buildMessage(
+                            return _buildMessage(
                               Alignment.bottomLeft, 
                               messageFriendColor,
                               messages[index].content                                              
@@ -186,12 +211,13 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                           }                        
                         }
                       }
-                    );}
-                    return Center(
-                        child: CircularProgressIndicator()
-                      );}
-                )
-              
+                    );
+                  }
+                  return Center(
+                      child: CircularProgressIndicator()
+                  );
+                }
+              )             
             ),
             Align(
               alignment: Alignment.bottomCenter,
@@ -213,7 +239,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                         splashRadius: 30.0,
                         splashColor: Colors.white,
                         onPressed: () {
-                          showModalBottomSheet(context: context, builder: (ctx)=> buildChoice(ctx));
+                          showModalBottomSheet(context: context, builder: (ctx)=> _buildChoice(ctx));
                         },
                         icon: Icon(Icons.add),
                       ),
@@ -261,66 +287,6 @@ class _ChatDetailPage extends State<ChatDetailPage> {
     );
   }
 
-  void _showHero(BuildContext context, String image, String index)
-  {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder : (context){
-        return Scaffold(
-          body: Center(
-            child: Hero(
-              tag: 'image'+index,
-              child: Image.network(image)
-            )
-          )
-        );})
-    );
-  }
-   _showDialog(BuildContext context, String imagePath)
-  {
-    return showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          backgroundColor: kPrimaryColor,
-          title: Text('Save', style: TextStyle(color: textPrimaryColor)),
-          content: Text('Do you want to save the image?', style: TextStyle(color: textPrimaryColor)),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: TextStyle(color: textPrimaryColor)),
-            ),
-            TextButton(
-              onPressed: () async {
-                await _requestPermission();
-                await _saveNetworkImage(imagePath); 
-                Navigator.pop(context, 'OK');
-              },
-              child: Text('OK', style: TextStyle(color: textPrimaryColor)),
-            ),
-          ],
-        ),
-    );
-  }
-  Future<void> _saveNetworkImage(String imagePath) async {
-    var response = await Dio().get(imagePath,
-    options: Options(responseType: ResponseType.bytes));
-    final result = await ImageGallerySaver.saveImage(
-      Uint8List.fromList(response.data),
-      quality: 60,
-      name: "hello");
-    print(result);
-  }
-
-  _requestPermission() async {
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.storage,
-    ].request();
-
-    final info = statuses[Permission.storage].toString();
-    print(info);
-    
-  }
-
   Future<void> addData(String data) async{
     db..child("chats").child('messages').child(widget.id).child(DateTime.now().toString().replaceAll(".", "")).set({
       'content': data,
@@ -328,13 +294,13 @@ class _ChatDetailPage extends State<ChatDetailPage> {
     });
     if(data.startsWith("https"))
     {
-      await FirebaseDatabase.instance.reference().child("chats").child("chatsroom").child(widget.id).set({
+      await FirebaseDatabase.instance.reference().child("chats").child("chatsroom").child(widget.id).update({
         "lastMessage": "photo",
         "timestamp": DateTime.now().toString()
       });
     }
     else{
-      await FirebaseDatabase.instance.reference().child("chats").child("chatsroom").child(widget.id).set({
+      await FirebaseDatabase.instance.reference().child("chats").child("chatsroom").child(widget.id).update({
         "lastMessage": data,
         "timestamp": DateTime.now().toString()
       });
@@ -342,7 +308,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
   }
 
 
-  Widget buildMessage(Alignment alignment, Color color, String message){
+  Widget _buildMessage(Alignment alignment, Color color, String message){
     return Align(
       alignment: alignment,
       child: Card(
@@ -358,25 +324,29 @@ class _ChatDetailPage extends State<ChatDetailPage> {
           ),
           child: Text(
             message,
-            style: TextStyle(color: textPrimaryColor, fontSize: 16),
+            style: TextStyle(color: textPrimaryColor, fontSize: 15, fontWeight: FontWeight.w400),
           ),
         ),
       )
     );
   }
 
-  Widget buildImage(Alignment alignment, int index){
+  Widget _buildImage(Alignment alignment, int index){
     return Align(
       alignment: alignment,
       child: GestureDetector(
-        onLongPress: (){_showDialog(context, messages[index].content);},
-        onTap: (){_showHero(context, messages[index].content, index.toString());},
+        onLongPress: (){BuildDialog(context, messages[index].content);},
+        onTap: (){showHero(context, messages[index].content, index.toString());},
         child: Hero(
           tag: "image"+index.toString(),
           child: Container(
-            margin: EdgeInsets.only(top: 15.5, left: 5),
+            width: 150,
+            height: 200,
+            color: Colors.grey[200],
+            margin: EdgeInsets.only(top: 15.5, left: 5, right: 5),
             child: Image.network(
               messages[index].content,
+              fit: BoxFit.cover,
               loadingBuilder: (BuildContext context, Widget child,
                   ImageChunkEvent? loadingProgress) {
                 if (loadingProgress == null) {
@@ -385,7 +355,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                 return Container(
                   width: 150,
                   height: 200,
-                  color: Colors.grey[300],
+                  color: Colors.grey[200],
                   child: Center(
                     child: CircularProgressIndicator(
                       value: loadingProgress.expectedTotalBytes != null
@@ -396,9 +366,6 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                   ),                                       
                 );
               },
-              alignment: alignment,
-              width: 150,
-              height: 200,
             )
           )
         ),
@@ -406,7 +373,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
     );
   }
 
-  Widget buildChoice(BuildContext context){
+  Widget _buildChoice(BuildContext context){
     return Container(
       padding: EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -427,10 +394,12 @@ class _ChatDetailPage extends State<ChatDetailPage> {
             title: Text("Image", style: TextStyle(color: textPrimaryColor)),
             leading: Icon(Icons.image, color: iconColor,),
             onTap: ()async{
-              _image = await getImage();
-              await uploadPic();
-              await addData(_url);
+              File imagePath;
+              late String urlImage;
+              imagePath = await getImage();
+              urlImage = await uploadPic(imagePath, "chats/${widget.id}");
               Navigator.pop(context);
+              await addData(urlImage);
             },
           )
         ]
