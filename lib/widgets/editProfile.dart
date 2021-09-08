@@ -4,7 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/utilities/constants.dart';
-import 'package:myapp/utilities/function.dart';
+import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:myapp/widgets/hero.dart';
 
 // ignore: must_be_immutable
@@ -43,7 +43,10 @@ class _EditProfileState extends State<EditProfile> {
                     backgroundImage: _imageChanged ? FileImage(_imageFile) : NetworkImage(_imageNetwork) as ImageProvider,
                   ),
                 ),
-                onTap: () => showHero(context, _imageChanged ? _imageFile : _imageNetwork, ""),
+                onTap: () => Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (context){ return ImageView(image: _imageChanged ? _imageFile : _imageNetwork, index: "",);})
+                ),
               ),
               SizedBox(height: 20,),
               ElevatedButton(
@@ -76,15 +79,13 @@ class _EditProfileState extends State<EditProfile> {
                     _imageNetwork = await uploadPic(_imageFile, "profile");
                   }
                   if(widget.isForChat){
-                    if(nameController.text.isNotEmpty)
-                      await _updateChatProfile("name", nameController.text);
-                    if(_imageChanged)
-                      await _updateChatProfile("image", _imageNetwork);                    
+                    if(nameController.text.isNotEmpty || _imageChanged)
+                      await _updateProfile("chats/members", "users/users_friends",  nameController.text, _imageNetwork, widget.chatId!, "name", "image", false);                 
                   }
                   else
                     if(nameController.text.isNotEmpty || _imageChanged){
-                      await _updateProfile("users/users_friends", "users/users_friends",  nameController.text, _imageNetwork);
-                      await _updateProfile("notifications/sendTo", "notifications/sendBy",  nameController.text, _imageNetwork);
+                      await _updateProfile("users/users_friends", "users/users_friends",  nameController.text, _imageNetwork, currentUser.id, "name", "image", true);
+                      await _updateProfile("notifications/sendTo", "notifications/sendBy",  nameController.text, _imageNetwork, currentUser.id, "name", "image", false);
                     }
                 },
                 child: Center(
@@ -99,28 +100,36 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
-   Future <void> _updateProfile(String dbRef, String updateRef ,String  updateName, String updateImage,) async {
-    await FirebaseDatabase.instance.reference().child(dbRef).child(currentUser.id).once().then((snap) async {
+   Future <void> _updateProfile(String dbRef, String updateRef ,String  updateName, String updateImage, String dbPath, String namePath, String imagePath, bool changeUser) async {
+    await FirebaseDatabase.instance.reference().child(dbRef).child(dbPath).once().then((snap) async {
       Map <String, dynamic> nameUpdate = Map();
       Map <String, dynamic> imageUpdate = Map();
       snap.value.forEach((key, value){
-        if(updateName.isNotEmpty)
-          nameUpdate["$updateRef/$key/${currentUser.id}/name"] = updateName;
-        if(_imageChanged)
-          imageUpdate["$updateRef/$key/${currentUser.id}/image"] = updateImage;       
-      });
-      if(updateName.isNotEmpty){
-        nameUpdate["users/users_profile/${currentUser.id}/name"] = updateName;     
+        if(value["chatId"].toString().startsWith("grp") && dbRef == "users/users_friends"){
+          if(updateName.isNotEmpty)
+          nameUpdate["chats/members/$key/$dbPath/name"] = updateName;
+          if(_imageChanged)
+            imageUpdate["chats/members/$key/$dbPath/image"] = updateImage;  
+        }
+        else{
+          if(updateName.isNotEmpty)
+            nameUpdate["$updateRef/$key/$dbPath/name"] = updateName;
+          if(_imageChanged)
+            imageUpdate["$updateRef/$key/$dbPath/image"] = updateImage;
+        }       
+        });
+      if(changeUser){
+        if(updateName.isNotEmpty){
+          nameUpdate["users/users_profile/${currentUser.id}/name"] = updateName;     
+        }
+        if(_imageChanged){
+          imageUpdate["users/users_profile/${currentUser.id}/image"] = updateImage;     
+        }
+      }
+      if(updateName.isNotEmpty)
         await FirebaseDatabase.instance.reference().update(nameUpdate);
-      }
-      if(_imageChanged){
-        imageUpdate["users/users_profile/${currentUser.id}/image"] = updateImage;     
+      if(_imageChanged)
         await FirebaseDatabase.instance.reference().update(imageUpdate);
-      }
     });
-  }
-
-  Future <void> _updateChatProfile(String basename, String update) async{
-    await FirebaseDatabase.instance.reference().child("chats/chatsroom/${widget.chatId}").update({basename : update});
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myapp/screens/createChatGroupPage.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/models/friendModel.dart';
@@ -17,54 +18,70 @@ class ChatPage extends StatefulWidget{
 
 class _ChatPageState extends State<ChatPage>{
 
+  DateTime _lastQuitTime = DateTime.now();
+
   @override
   Widget build(BuildContext context){
-    return SingleChildScrollView(
-      physics: BouncingScrollPhysics(),
-      child: Container(
-        color: kPrimaryColor,
-        margin: EdgeInsets.only(top: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            SafeArea(
-              child: Padding(
-                padding: EdgeInsets.only(left: 16, right: 16, top:15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                      child: Text("Conversation", style:TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: textPrimaryColor), )
-                    ),
-                    TextButton.icon(
-                      onPressed: () =>
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => CreateChatGroupPage()) 
+    return WillPopScope(
+      onWillPop: () async {
+        if (DateTime.now().difference(_lastQuitTime).inSeconds > 3) {
+          print ('press the back button again to exit ');
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Press back button again ')));
+          _lastQuitTime = DateTime.now();
+          return false;
+        } else {
+          print ('exit ');
+          SystemNavigator.pop();
+          return true;
+        }
+      },
+      child: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
+        child: Container(
+          color: kPrimaryColor,
+          margin: EdgeInsets.only(top: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 16, right: 16, top:15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Text("Conversation", style:TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: textPrimaryColor), )
                       ),
-                      icon: Icon(Icons.add, color: Colors.red),
-                      label: Text("Add new", style: TextStyle(color: Colors.red, fontSize: 15)),
-                    )
-                  ]
+                      TextButton.icon(
+                        onPressed: () =>
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => CreateChatGroupPage()) 
+                        ),
+                        icon: Icon(Icons.add, color: Colors.red),
+                        label: Text("Add new", style: TextStyle(color: Colors.red, fontSize: 15)),
+                      )
+                    ]
+                  )
                 )
-              )
-            ),
-            SizedBox(height: 20.0,),
-            Container(
-              child: chatPagefirstRendering ? Consumer<FriendsModel>(
-                builder: (context, model, child){
-                  chatPagefirstRendering = false;
-                  if(model.isEmpty())
-                    // return Center(child: CircularProgressIndicator());
-                    return _buildAlias();                   
-                  else 
-                    return ConversationList(range: model.length());                  
-                },
-              ) : ConversationList(range: Provider.of<FriendsModel>(context, listen: true).length())                                             
-            )            
-          ]
-        )
-      )   
+              ),
+              SizedBox(height: 20.0,),
+              Container(
+                child:Consumer<FriendsModel>(
+                  builder: (context, model, child){
+                    chatPagefirstRendering = false;
+                    if(model.isEmpty())
+                      // return Center(child: CircularProgressIndicator());
+                      return _buildAlias();                   
+                    else 
+                      return ConversationList(range: model.length(), friends: model);                  
+                  },
+                )                                          
+              )            
+            ]
+          )
+        )   
+      ),
     );
   }
   

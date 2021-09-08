@@ -14,18 +14,20 @@ class ChatMembersModel extends ChangeNotifier{
   }
 
   Future <void> _getChatMembers(String chatId) async{
-    FirebaseDatabase.instance.reference().child("chats/members").child(chatId).once().then((snapshot){
-      snapshot.value.forEach((key, value) async {
-        await FirebaseDatabase.instance.reference().child("users").child("users_profile").child(key).once().then((data) {
-          _members.add(User(
-            id: data.value["id"],
-            name: data.value["name"],
-            image: data.value["image"]
-          ));
-          notifyListeners();
-        });
+    FirebaseDatabase.instance.reference().child("chats/members").child(chatId).once().then((snapshot) {
+      snapshot.value.forEach((key, value){
+        _members.add(User(
+          id: key,
+          name: value["name"],
+          image: value["image"]
+        ));
+        notifyListeners();
       });
     });
+  }
+
+  void dispose(){
+    super.dispose();
   }
 
   bool isEmpty(){

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/models/friendModel.dart';
-import 'package:myapp/screens/profilePage.dart';
 import 'package:myapp/widgets/userList.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +29,6 @@ class _FriendsPageState extends State<FriendsPage> {
             ),
             !_friends.isEmpty() ?   
               Container(
-                padding: EdgeInsets.all(10),
                 margin: EdgeInsets.only(top: 5),
                 child: ListUser(isForSearch: false, users: _friends.toUsers().where((element) => !element.id.startsWith("grp")).toList())
               ) :Consumer<FriendsModel>(

@@ -1,18 +1,23 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:myapp/models/chatMembersModel.dart';
+import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/models/messageModel.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/screens/chatDetailPage/optionsPage.dart';
 import 'package:myapp/screens/profilePage.dart';
 import 'package:myapp/utilities/constants.dart';
-import 'package:myapp/utilities/function.dart';
+import 'package:myapp/utilities/date.dart';
+import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:myapp/screens/chatDetailPage/addFriendsToChatPage.dart';
+import 'package:myapp/utilities/function.dart';
 import 'package:myapp/widgets/dialog.dart';
 import 'package:myapp/widgets/hero.dart';
+import 'package:myapp/widgets/userAvatar.dart';
 import 'dart:async';
 
 import 'package:provider/provider.dart';
@@ -22,7 +27,8 @@ import 'package:provider/provider.dart';
 class ChatDetailPage extends StatefulWidget {
   String id;
   User friend;
-  ChatDetailPage({required this.id, required this.friend, });
+  bool friendConnected;
+  ChatDetailPage({required this.id, required this.friend, required this.friendConnected});
 
   @override
   _ChatDetailPage createState() => _ChatDetailPage();
@@ -88,12 +94,14 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                 IconButton(
                   padding: EdgeInsets.all(1),
                   iconSize: 40,
-                  splashRadius: 30,
-                  icon: CircleAvatar(
-                    maxRadius: 25,
-                    backgroundImage:NetworkImage(widget.friend.image ),
+                  splashRadius: 28,
+                  icon: UserAvatar(
+                    widget.friend.image,
+                    widget.friendConnected,
+                    30
                   ),
                   onPressed: () {
+                    var friends = context.read<FriendsModel>();
                     if(widget.id.startsWith("grp"))
                       Navigator.push(
                         context, 
@@ -102,7 +110,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                     else 
                     Navigator.push(
                       context, 
-                      MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: widget.friend, friend: "Message", chatId: widget.id,))
+                      MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: widget.friend, friend: "Message", chatId: widget.id, friendConnected: friends.friends[friends.whereChatId(widget.id)].connected,))
                     );
                   }
                 ),
@@ -117,7 +125,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                           color: textPrimaryColor, fontSize: 15, fontWeight: FontWeight.w600)
                       ),
                       SizedBox(height: 6),
-                      Text("Online",
+                      Text(widget.friendConnected ? "Online" : "Offline",
                         style: TextStyle(
                           color: textSecondaryColor, fontSize: 13)
                       ),
@@ -150,226 +158,273 @@ class _ChatDetailPage extends State<ChatDetailPage> {
             )
           ),
         ),
-        body: KeyboardVisibilityBuilder(
-          builder: (context, isKeyboardVisible){
-          return  Container(
-          height: MediaQuery.of(context).size.height,
-          child: Stack(children: <Widget>[
-            Container(    
-              height: isKeyboardVisible ?  MediaQuery.of(context).size.height/2 : MediaQuery.of(context).size.height-70,                 
-              child: StreamBuilder(
-                stream:FirebaseDatabase.instance.reference().child('chats/messages').child(widget.id).onValue,
-                builder: (context, AsyncSnapshot<Event> snapshot) {
-                  if (snapshot.hasData){
-                    messages.clear();
-                    if(snapshot.data!.snapshot.value != null)
-                    {              
-                      snapshot.data!.snapshot.value.forEach((key, value){
-                        messages.add(new Message(
-                          content: value["content"],
-                          sender: value["userSender"],
-                          createAt: key.toString().substring(0, 19) + "." + key.toString().substring(19)
-                        ));
-                      });            
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      controller: _controller,
-                      itemCount: messages.length,
-                      padding: EdgeInsets.only(top: 10, bottom: 10),
-                      itemBuilder: (context, index) {
-                        if(messages[index].isImage())
-                        {
-                          if(messages[index].sender == currentUser.name)
-                          {
-                            return _buildImage(
-                              Alignment.bottomRight, 
-                              index
-                            );
-                          }
-                          else{
-                            return _buildImage(
-                              Alignment.bottomLeft, 
-                              index
-                            );
-                          }
+        body: SingleChildScrollView(
+          child: Container(
+            height: MediaQuery.of(context).size.height - 80,
+            padding: EdgeInsets.only(bottom: 15),
+            child: Stack(children: <Widget>[
+              Container(
+                margin: EdgeInsets.only(bottom: 100),               
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: StreamBuilder(
+                    stream:FirebaseDatabase.instance.reference().child('chats/messages').child(widget.id).onValue,
+                    builder: (context, AsyncSnapshot<Event> snapshot) {
+                      if (snapshot.hasData){
+                        messages.clear();
+                        if(snapshot.data?.snapshot.value != null)
+                        {              
+                          snapshot.data!.snapshot.value.forEach((key, value){
+                            messages.add(new Message(
+                              content: value["content"],
+                              sender: value["userSender"],
+                              createAt: value["file_name"] != null ? value["file_name"] : key.toString().substring(0, 19) + "." + key.toString().substring(19)
+                            ));
+                          });            
+                        
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            controller: _controller,
+                            itemCount: messages.length,
+                            padding: EdgeInsets.only(top: 10, bottom: 10),
+                            itemBuilder: (context, index) {
+                              if(messages[index].sender == currentUser.name){
+                                return Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: messages[index].isImage() ? _buildImage(index) : 
+                                  (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
+                                    _buildMessage(messageUserColor, messages[index].content,messages[index].createAt,))
+                                );
+                                    
+                              }
+                              else if(messages[index].sender == null)
+                                return _buildDate(messages[index].content);
+                              else {
+                                return Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: messages[index].isImage() ? _buildImage(index) : 
+                                  (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
+                                    _buildMessage(messageFriendColor, messages[index].content,messages[index].createAt,))
+                                );                                   
+                              }
+                            }                             
+                          );
                         }
-                        else{ 
-                          if(messages[index].sender == currentUser.name){ 
-                            return _buildMessage(
-                              Alignment.bottomRight, 
-                              messageUserColor, 
-                              messages[index].content
-                            );
-                          }
-                          else{
-                            return _buildMessage(
-                              Alignment.bottomLeft, 
-                              messageFriendColor,
-                              messages[index].content                                              
-                            ); 
-                          }                        
-                        }
+                        return Center(
+                          child: Column(
+                            children: [
+                              Image.asset("assets/images/hello.jpg"),
+                              SizedBox(height: 40,),
+                              Text("Say hello to your new friend", style: TextStyle(color: textPrimaryColor,  fontSize: 17, fontWeight: FontWeight.w300))
+                            ],
+                          )
+                        );
                       }
-                    );
-                  }
-                  return Center(
-                      child: CircularProgressIndicator()
-                  );
-                }
-              )             
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Card(
-                margin: EdgeInsets.only(bottom: 12),
-                elevation: 1,
-                shadowColor: Colors.grey.shade50,
-                color: Colors.white70,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                child: Container(
-                  padding: EdgeInsets.all(10),
-                  height: 60,
-                  width: MediaQuery.of(context).size.width-40,
-                  child: Center(
-                    child: Row(children: <Widget>[
-                      IconButton(
-                        iconSize: 25,
-                        color: iconColor,
-                        splashRadius: 30.0,
-                        splashColor: Colors.white,
-                        onPressed: () {
-                          showModalBottomSheet(context: context, builder: (ctx)=> _buildChoice(ctx));
-                        },
-                        icon: Icon(Icons.add),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      ),
-                      Expanded(
-                        child: TextField(
-                          onTap: (){
-                            _needsScroll = true;
-                            setState((){});             
+                      return Center(
+                          child: CircularProgressIndicator()
+                      );
+                    }
+                  ),
+                )             
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Card(
+                  margin: EdgeInsets.only(bottom: 12),
+                  elevation: 1,
+                  shadowColor: Colors.grey.shade50,
+                  color: inputMessageColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    height: 60,
+                    width: MediaQuery.of(context).size.width-40,
+                    child: Center(
+                      child: Row(children: <Widget>[
+                        IconButton(
+                          iconSize: 25,
+                          color: iconColor,
+                          splashRadius: 30.0,
+                          splashColor: Colors.white,
+                          onPressed: () {
+                            showModalBottomSheet(context: context, builder: (ctx)=> _buildChoice(ctx));
                           },
-                          decoration: InputDecoration(
-                            hintText: "Type message...",
-                            hintStyle: TextStyle(color: hintColor),
-                            border: InputBorder.none
-                          ),
-                          controller: messageController,
+                          icon: Icon(Icons.add),
+                        ),
+                        SizedBox(
+                          width: 15,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            onTap: (){
+                              setState((){
+                                _needsScroll = true;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              hintText: "Type message...",
+                              hintStyle: TextStyle(color: hintColor),
+                              border: InputBorder.none
+                            ),
+                            controller: messageController,
+                          )
+                        ),
+                        SizedBox(width: 15),
+                        FloatingActionButton(
+                          onPressed: ()async{
+                            if(messageController.text.trim().isNotEmpty){
+                              await addData(messageController.text, null);                     
+                              messageController.text = "";
+                              setState((){
+                                _needsScroll = true;
+                              });
+                            }
+                          },
+                          child: Icon(Icons.send, color: Colors.white, size: 18),
+                          backgroundColor: Colors.blue.shade300,
+                          elevation: 0
                         )
-                      ),
-                      SizedBox(width: 15),
-                      FloatingActionButton(
-                        onPressed: ()async{
-                          if(messageController.text.isNotEmpty){
-                            await addData(messageController.text);                     
-                            messageController.text = "";
-                            setState((){
-                              _needsScroll = true;
-                            });
-                          }
-                        },
-                        child: Icon(Icons.send, color: Colors.white, size: 18),
-                        backgroundColor: Colors.blue.shade300,
-                        elevation: 0
-                      )
-                    ]
-                  ))
+                      ]
+                    ))
+                  )
+                  )
                 )
-                )
-              )
-            ]
-          )
-        );}
-      )
+              ]
+            )
+              ),
+        )
     );
   }
 
-  Future<void> addData(String data) async{
-    db..child("chats").child('messages').child(widget.id).child(DateTime.now().toString().replaceAll(".", "")).set({
+  Future<void> addData(String data, String? fileName) async{
+
+    String date = printDate(messages.last.createAt);
+
+    if(date != ""){
+      await db.child("chats").child('messages').child(widget.id).child(DateTime.now().toString().replaceAll(".", "")).set({
+        'content': DateTime.now().toString(),
+      });
+    }
+
+    await db.child("chats").child('messages').child(widget.id).child(DateTime.now().toString().replaceAll(".", "")).set({
       'content': data,
       'userSender': currentUser.name,
     });
+
     if(data.startsWith("https"))
     {
-      await FirebaseDatabase.instance.reference().child("chats").child("chatsroom").child(widget.id).update({
+      await FirebaseDatabase.instance.reference().child("chats/chatsroom").child(widget.id).update({
         "lastMessage": "photo",
         "timestamp": DateTime.now().toString()
       });
     }
     else{
-      await FirebaseDatabase.instance.reference().child("chats").child("chatsroom").child(widget.id).update({
-        "lastMessage": data,
-        "timestamp": DateTime.now().toString()
+      await FirebaseDatabase.instance.reference().child("chats/chatsroom").child(widget.id).update({
+        "lastMessage": fileName != null ? data.substring(10) : data,
+        "timestamp": DateTime.now().toString(),
+        if(fileName != null) "file_name": fileName
       });
     }
   }
 
-
-  Widget _buildMessage(Alignment alignment, Color color, String message){
-    return Align(
-      alignment: alignment,
-      child: Card(
-        margin: EdgeInsets.only(right: 5.8, top: 20, left: 5.8),
-        color: color,
-        shadowColor: Colors.black54,
-        elevation: 3,
-        shape:  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), 
-        child: Container(
-          padding: EdgeInsets.all(15),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.5,
-          ),
-          child: Text(
-            message,
-            style: TextStyle(color: textPrimaryColor, fontSize: 15, fontWeight: FontWeight.w400),
+  Widget _buildMessage(Color color, String message, String messageDate){
+    return Column(
+      children: [
+        // if(printDate(messageDate).isNotEmpty && ) Center(
+        //   heightFactor: 3,
+        //   child: Text(printDate(messageDate), style: TextStyle(color: textSecondaryColor, fontSize: 13)),
+        // ),
+        Card(
+          margin: EdgeInsets.only(right: 6, top: 7.5, left: 6, bottom: 7.5),
+          color: color,
+          shadowColor: Colors.black54,
+          elevation: 2,
+          shape:  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), 
+          child: Container(
+            padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.5,
+            ),
+            child: Text(
+              message,
+              style: TextStyle(color: textPrimaryColor, fontSize: 16, fontWeight: FontWeight.w400),
+            ),
           ),
         ),
-      )
+      ],
     );
   }
 
-  Widget _buildImage(Alignment alignment, int index){
-    return Align(
-      alignment: alignment,
-      child: GestureDetector(
-        onLongPress: (){BuildDialog(context, messages[index].content);},
-        onTap: (){showHero(context, messages[index].content, index.toString());},
-        child: Hero(
-          tag: "image"+index.toString(),
-          child: Container(
-            width: 150,
-            height: 200,
-            color: Colors.grey[200],
-            margin: EdgeInsets.only(top: 15.5, left: 5, right: 5),
-            child: Image.network(
-              messages[index].content,
-              fit: BoxFit.cover,
-              loadingBuilder: (BuildContext context, Widget child,
-                  ImageChunkEvent? loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                }
-                return Container(
-                  width: 150,
-                  height: 200,
-                  color: Colors.grey[200],
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                    )
-                  ),                                       
-                );
-              },
-            )
-          )
+  Widget _buildDate(String date){
+    date = printDate(date);
+    return Center(
+      heightFactor: 3,
+      child: Text(date, style: TextStyle(color: textSecondaryColor, fontSize: 13)),
+    );
+  }
+
+  Widget _buildFile(String fileName, String urlFile){
+    return Container(
+      margin: EdgeInsets.only(left: 10, right: 10),
+      child: TextButton(
+        onPressed: () async {
+          try{
+            Dio dio = Dio();
+            await requestPermission();
+            await download2(dio, urlFile.substring(10), fileName);
+          }catch(e) {
+            print(e.toString());
+          }
+        },
+        child: Text(
+          fileName,
+          style: TextStyle(color: Colors.blue, fontSize: 16, decoration: TextDecoration.underline, decorationColor: Colors.blue)
         ),
-      )
+      ),
+    );
+  }
+
+  Widget _buildImage(int index){
+    return GestureDetector(
+      onLongPress: (){BuildDialog(context, messages[index].content);},
+      onTap: (){
+        Navigator.push(
+          context, 
+          MaterialPageRoute(builder: (context){ return ImageView(image: messages[index].content, index: index.toString(),);})
+        );
+      },
+      child: Hero(
+        tag: "image" + index.toString(),
+        child: Container(
+          width: 150,
+          height: 200,
+          color: Colors.grey[200],
+          margin: EdgeInsets.only(top: 7.5, left: 5, right: 5, bottom: 7.5),
+          child: Image.network(
+            messages[index].content,
+            fit: BoxFit.cover,
+            loadingBuilder: (BuildContext context, Widget child,
+                ImageChunkEvent? loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              }
+              return Container(
+                width: 150,
+                height: 200,
+                color: Colors.grey[200],
+                child: Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  )
+                ),                                       
+              );
+            },
+          )
+        )
+      ),
     );
   }
 
@@ -388,6 +443,18 @@ class _ChatDetailPage extends State<ChatDetailPage> {
           ListTile(
             title: Text("File",style: TextStyle(color: textPrimaryColor)),
             leading: Icon(Icons.folder, color: iconColor),
+            onTap: ()async{
+              FilePickerResult? result;
+              late String urlFile;
+              late String fileName;
+              result = await getFile();
+              if(result != null){
+                fileName = getFileName(result);
+                urlFile = await uploadFile(result , "chats/${widget.id}");
+              }
+              Navigator.pop(context);
+              await addData('#fileAina.' + urlFile, fileName);
+            },
           ),
           Divider(thickness: 2,),
           ListTile(
@@ -399,7 +466,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
               imagePath = await getImage();
               urlImage = await uploadPic(imagePath, "chats/${widget.id}");
               Navigator.pop(context);
-              await addData(urlImage);
+              await addData(urlImage, null);
             },
           )
         ]

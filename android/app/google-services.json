@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "992783354161",
+    "firebase_url": "https://flutterchat-bda44-default-rtdb.firebaseio.com",
     "project_id": "flutterchat-bda44",
     "storage_bucket": "flutterchat-bda44.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "992783354161-noeent2j3gdm7c5jmk5egeifo9q23juk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.myapp",
+            "certificate_hash": "0d9811f13ef62cf10f3a3a00a8fa05888a7bb4ab"
+          }
+        },
         {
           "client_id": "992783354161-hgp8u0gqjqfot791uhprjnjjv9kvh4k1.apps.googleusercontent.com",
           "client_type": 3

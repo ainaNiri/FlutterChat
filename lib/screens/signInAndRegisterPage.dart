@@ -2,11 +2,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:myapp/utilities/function.dart';
+import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/screens/actualityPage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+//import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'dart:io';
+
+import 'package:myapp/widgets/loadingDialog.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -73,23 +77,24 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
               children: <Widget>[
                 SizedBox(height: 35,),
                 Container(
+                  width: double.infinity,
                   height: MediaQuery.of(context).size.height/3-20,
-                  child: Image.asset("assets/images/3531375.jpg")
+                  child: Image.asset("assets/images/3531375.jpg", fit: BoxFit.cover)
                 ),
-                SizedBox(height: 10,),
+                SizedBox(height: 5,),
                 Form(
                 key: _formKey,
                 child: ScaleTransition(
                   scale: _animation,
                     child: Container(
                       width: MediaQuery.of(context).size.width-40,
-                      padding: EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20),
+                      padding: EdgeInsets.only(top: 0, bottom: 10, left: 20, right: 20),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
                       children: <Widget>[
-                        SizedBox(height: signIn ? 70 : 35,),
+                        SizedBox(height: signIn ? 50 : 35,),
                           _buildInput("Email",Icons.mail_outlined, emailController, true),
                           if(!signIn)
                             SizedBox(height: 20,),
@@ -102,8 +107,9 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
                               if(value!.isEmpty){
                                 return "Please enter a password";
                               }
-                              else if(_error2)
+                              else if(_error2){
                                 return "Wrong password";
+                              }
                               
                               return null;
                             },
@@ -131,7 +137,7 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
                               
                             ),
                           ),
-                          SizedBox(height: 10,),
+                          SizedBox(height: 15,),
                           if(signIn)Align(
                             alignment: Alignment.bottomRight,
                             child: Text("Forgotten password?", style: TextStyle(fontFamily: "arial", color: Colors.blueAccent)),
@@ -153,18 +159,66 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
                           SizedBox(height: 25),
                           ElevatedButton.icon(
                             onPressed: () async {
-                              // final snackBar = SnackBar(
-                              //   content : Text("Process data ... ")
-                              // );
-                              // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              showLoadingIndicator(context);
                               signIn ? await _signIn() : await _register();
-                              if (_formKey.currentState!.validate()) {
+                              Navigator.of(context).pop();
+                              await Future.delayed(Duration(milliseconds: 600));
+                              if (_formKey.currentState!.validate() && !_error1 && !_error2) {
                                 Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
+                              }
+                              else{
+                                setState((){_error2 = false;});
                               }                  
                             },
                             icon: Icon(Icons.login_outlined, color: Colors.white,), 
                             label: Text(signIn ? "Login" : "Register", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
                             style: buttonStyle
+                          ),
+                          SizedBox(height: 20),
+                          Text("------------------ OR -------------------"),
+                          SizedBox(height: 20),
+                          ScaleTransition(
+                            scale: _animation,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () async {
+                                        showLoadingIndicator(context);
+                                        await _signInWithGoogle();
+                                        Navigator.of(context).pop();
+                                        await Future.delayed(Duration(milliseconds: 600));
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
+                                                        
+                                      },
+                                      icon:  Container(
+                                        width: 20,
+                                        height: 20,
+                                        child: Image.asset("assets/images/google.png", fit: BoxFit.cover)
+                                      ),
+                                      label: Text("Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                                      style: smallButtonStyle(Colors.red.shade400)
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: () async {
+                                        // final snackBar = SnackBar(
+                                        //   content : Text("Process data ... ")
+                                        // );
+                                        // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        // await _signInWithFacebook();
+                                        // Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
+                                                        
+                                      },
+                                      icon:  Icon(Icons.facebook_rounded, color: Colors.white,),
+                                      label: Text("facebook", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                                      style: smallButtonStyle(Colors.lightBlue)
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                           SizedBox(height: 20,),
                           if(signIn)Row(
@@ -283,4 +337,37 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
       }
     }
   }
+
+  Future <void>  _signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    UserCredential user = await FirebaseAuth.instance.signInWithCredential(credential);
+    currentUser.id = user.user!.uid;
+    await FirebaseDatabase.instance.reference().child('users/users_profile').child(currentUser.id).once().then((value){currentUser.name = value.value['name'];currentUser.image = value.value['image'];});
+  }
+
+  // Future <void> _signInWithFacebook() async {
+  //   // Trigger the sign-in flow
+  //   final LoginResult loginResult = await FacebookAuth.instance.login();
+
+  //   // Create a credential from the access token
+  //   final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken!.token);
+
+  //   // Once signed in, return the UserCredential
+  //   UserCredential user =  await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+  //   currentUser.id = user.user!.uid;
+  //   await FirebaseDatabase.instance.reference().child('users/users_profile').child(currentUser.id).once().then((value){currentUser.name = value.value['name'];currentUser.image = value.value['image'];});
+  //}
+
 }

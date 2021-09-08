@@ -81,10 +81,12 @@ class _SearchPageState extends State<SearchPage> {
         icon: Icon(Icons.arrow_back),color: Colors.blue, onPressed: () { Navigator.pop(context);},
       ),
       title: TextField(
+        style: TextStyle(color: textPrimaryColor),
         autofocus: true,
         controller: _filter,
         decoration:  InputDecoration(
           hintText: 'Search...',
+          hintStyle: TextStyle(color: textSecondaryColor),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent)
          )

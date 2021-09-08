@@ -14,6 +14,7 @@ Color textSecondaryColor = Colors.grey.shade600;
 
 //Color for the input
 Color inputColor = Colors.white;
+Color inputMessageColor = Colors.white60;
 Color hintColor = Colors.grey.shade400;
 
 //Color for the messageContainer
@@ -44,3 +45,12 @@ ButtonStyle buttonStyle = ButtonStyle(
   fixedSize: MaterialStateProperty.all(Size(300, 50)),
   textStyle: MaterialStateProperty.all(TextStyle(fontSize: 18))
 );
+
+ButtonStyle smallButtonStyle(Color color){
+  return ButtonStyle(
+    shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+    backgroundColor: MaterialStateProperty.all(color),
+    foregroundColor: MaterialStateProperty.all(Colors.white),
+    fixedSize: MaterialStateProperty.all(Size(150, 40))
+  );
+}

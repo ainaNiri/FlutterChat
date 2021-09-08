@@ -57,6 +57,7 @@ class _WidgetOptionState extends State<WidgetOption>{
           elevation: 1,
           color: kSecondaryColor, 
           child: Container(
+            color: kSecondaryColor,
             padding: EdgeInsets.fromLTRB(20, 20, 7, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

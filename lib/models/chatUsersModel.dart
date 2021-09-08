@@ -24,8 +24,13 @@ class Friend  {
   String lastMessageContent;
   String lastMessageTime;
   String lastMessageType;
+  bool connected;
 
-  Friend({required this.id, required this.chatId, required this.image, required this.name, required this.lastMessageContent, required this.lastMessageTime, required this.lastMessageType});
+  Friend({required this.id, required this.chatId, 
+    required this.image, required this.name, 
+    required this.lastMessageContent, required this.lastMessageTime, 
+    required this.lastMessageType, required this.connected
+  });
 
   User toUser(){
     return User(

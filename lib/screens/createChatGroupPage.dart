@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/models/chatMembersModel.dart';
 import 'package:myapp/screens/chatDetailPage/addFriendsToChatPage.dart';
 import 'package:myapp/utilities/constants.dart';
-import 'package:myapp/utilities/function.dart';
+import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:provider/provider.dart';
 
 class CreateChatGroupPage extends StatefulWidget {
@@ -37,17 +37,27 @@ class _CreateChatGroupPageState extends State<CreateChatGroupPage> {
         child: Column(
           children: [
             Center(
-              child: GestureDetector(
-                child: CircleAvatar(
-                  radius: 70,
-                  backgroundImage: _imageChanged ? FileImage(_image) : AssetImage("") as ImageProvider,
-                ),
-                onTap: () async {
-                  _image = await getImage();
-                  setState((){                 
-                    _imageChanged = true;
-                  });
-                },
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 70,
+                    backgroundImage: _imageChanged ? FileImage(_image) : AssetImage("assets/images/chat.jpeg") as ImageProvider,
+                  ),
+                  Positioned(
+                    bottom: 0.1,                   
+                    right: 0.1,
+                    child: IconButton(
+                      iconSize: 30,
+                      icon: Icon(Icons.add_a_photo, color: iconSecondaryColor,),
+                      onPressed: () async {
+                        _image = await getImage();
+                        setState((){                 
+                          _imageChanged = true;
+                        });
+                      },
+                    )
+                  )
+                ],
               ),
             ),
             SizedBox(height: 30),
@@ -75,7 +85,7 @@ class _CreateChatGroupPageState extends State<CreateChatGroupPage> {
                     ),
                     Flexible(
                       child: ChangeNotifierProvider(create: (_) => 
-                        ChatMembersModel("") ,child: AddFriendsToChat(chatId: "", chatName: nameController.text, chatImage: _image,)
+                        ChatMembersModel("") ,child: AddFriendsToChat(formkey: _formKey, chatId: "", chatName: nameController.text, chatImage: _image, isNew: true,)
                       )
                     )
                   ]

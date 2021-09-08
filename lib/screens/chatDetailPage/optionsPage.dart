@@ -38,7 +38,10 @@ class OptionsPage extends StatelessWidget {
                               radius: 70,
                             ),
                           ),
-                          onPressed: () => showHero(context, this.chatImage, ""),
+                          onPressed: () => Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (context){ return ImageView(image: this.chatImage, index: "",);})
+                          ),
                         ),
                         SizedBox(height: 15,),
                         Text(this.chatName, style: TextStyle(color: textPrimaryColor, fontSize: 25, fontWeight: FontWeight.bold))

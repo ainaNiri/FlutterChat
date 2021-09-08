@@ -73,7 +73,7 @@ class _ActualityPage extends State<ActualityPage>{
                     builder:(context, AsyncSnapshot<Event> event){        
                       if (event.hasData) {
                         if(event.data!.snapshot.value != null){
-                          notificationCounter = int.parse(event.data!.snapshot.value);
+                          notificationCounter = event.data!.snapshot.value;
                           if(notificationCounter != 0)
                             return  Container(
                               padding: EdgeInsets.all(2),

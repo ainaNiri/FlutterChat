@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/searchPage.dart';
 import 'package:myapp/screens/settingPage.dart';
-import 'package:myapp/widgets/drawer.dart';
 
 PreferredSizeWidget buildAppBar(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey) {
     return PreferredSize(

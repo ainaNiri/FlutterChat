@@ -20,8 +20,9 @@ class ProfilePage extends StatefulWidget {
     id: ""
   );
   String? friend;
+  bool? friendConnected;
   
-  ProfilePage({this.icon, required this.person, this.friend, this.chatId});
+  ProfilePage({this.icon, required this.person, this.friend, this.chatId, this.friendConnected});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -70,7 +71,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           maxRadius: 70,
                         ),
                       ),
-                      onTap: () => showHero(context, widget.person.image, ""),
+                      onTap: () => Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context){ return ImageView(image: widget.person.image, index: "",);})
+                      ),
                     ),
                     SizedBox(height: 20),
                     Text(widget.person.name ,style: TextStyle(color: textPrimaryColor, fontWeight: FontWeight.bold, fontSize: 20)),                   
@@ -97,13 +101,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   else
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context){ return ChatDetailPage(id: widget.chatId!, friend: widget.person);})
+                      MaterialPageRoute(builder: (context){ return ChatDetailPage(id: widget.chatId!, friend: widget.person, friendConnected: widget.friendConnected!,);})
                     );  
                 },
                 label: Text( widget.friend ?? "Add"),
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateColor.resolveWith(getColor),
-                  padding: MaterialStateProperty.all(EdgeInsets.fromLTRB(25, 10, 25, 10))
+                  shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                  backgroundColor: MaterialStateProperty.resolveWith(getColor),
+                  foregroundColor: MaterialStateProperty.all(Colors.white),
+                  fixedSize: MaterialStateProperty.all(Size(150, 40))
                 ),
               )
             ),
@@ -140,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
               )           
             else 
               _buildList(),
-            Collection()
+            Collection(userId: widget.person.id,)
           ]
         ),
       )       
@@ -169,7 +175,11 @@ class _ProfilePageState extends State<ProfilePage> {
     await FirebaseDatabase.instance.reference().child('notifications').child("sendBy").child(widget.person.id).child(currentUser.id).set({
       "id": currentUser.id,
       "name": currentUser.name,
-      "image": currentUser.image
+      "image": currentUser.image,
+      "isFriend": false
+    });
+    await FirebaseDatabase.instance.reference().child('notifications/sendBy').child(widget.person.id).child("number").once().then((value) async{
+      await FirebaseDatabase.instance.reference().child('notifications/sendBy').child(widget.person.id).child("number").set(value.value + 1);
     });
     await FirebaseDatabase.instance.reference().child('notifications').child("sendTo").child(currentUser.id).set({
       widget.person.id : true

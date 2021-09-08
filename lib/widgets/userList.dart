@@ -24,54 +24,58 @@ class ListUser extends StatelessWidget {
         return Container(
           margin: const EdgeInsets.only(top: 8),
           padding: const EdgeInsets.all(10.0),
-          child: Column(children: <Widget>[
-            ListTile(
-              focusColor: Colors.grey[50],
-              dense: false,
-              leading: CircleAvatar(
-                backgroundImage: NetworkImage(this.users[index].image),
-                radius: 25,
-              ),
-              title: Text(this.users[index].name, style: TextStyle(color: textPrimaryColor),),
-              trailing: isForSearch ? IconButton(onPressed: (){}, icon:  (friendId != -1) ? Icon(Icons.message_sharp, color: iconSecondaryColor,): 
-                (users[index].name.toLowerCase() == currentUser.name.toLowerCase() ? 
-                  Icon(Icons.account_box_rounded, color: iconSecondaryColor,) : Icon(Icons.person_add, color: iconSecondaryColor)
-                )
-              ) : null,
-              onTap: (){
-                if(this.users[index].name == currentUser.name){
-                  Navigator.push(
+          child: Material(
+            color: kPrimaryColor,
+            child: Column(children: <Widget>[
+              ListTile(
+                focusColor: Colors.grey[50],
+                dense: false,
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(this.users[index].image),
+                  radius: 27,
+                ),
+                title: Text(this.users[index].name, style: TextStyle(color: textPrimaryColor),),
+                trailing: isForSearch ? IconButton(onPressed: (){}, icon:  (friendId != -1) ? Icon(Icons.message_sharp, color: iconSecondaryColor,): 
+                  (users[index].name.toLowerCase() == currentUser.name.toLowerCase() ? 
+                    Icon(Icons.account_box_rounded, color: iconSecondaryColor,) : Icon(Icons.person_add, color: iconSecondaryColor)
+                  )
+                ) : null,
+                onTap: (){
+                  if(this.users[index].name == currentUser.name){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context){
+                        return ProfilePage(
+                          person: currentUser);
+                          }
+                        )
+                    );
+                  }
+                  else if(this.users[index].name.toLowerCase() != currentUser.name.toLowerCase() &&  (friendId == -1)){ 
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context){
+                        return ProfilePage(
+                          icon: Icon(Icons.add),
+                          person: this.users[index],);
+                          }
+                        )
+                    );}
+                  else if (friendId != 1){
+                    Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context){
-                      return ProfilePage(
-                        person: currentUser);
-                        }
-                      )
+                    MaterialPageRoute(builder: (context){ return ProfilePage(
+                      chatId: friends.friends[friendId].chatId,
+                      icon: Icon(Icons.message),
+                      person: this.users[index],
+                      friend: "Message",
+                      friendConnected: friends.friends[friendId].connected);})
                   );
+                  }
                 }
-                else if(this.users[index].name.toLowerCase() != currentUser.name.toLowerCase() &&  (friendId == -1)){ 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context){
-                      return ProfilePage(
-                        icon: Icon(Icons.add),
-                        person: this.users[index],);
-                        }
-                      )
-                  );}
-                else if (friendId != 1){
-                  Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context){ return ProfilePage(
-                    chatId: friends.friends[friendId].chatId,
-                    icon: Icon(Icons.message),
-                    person: this.users[index],
-                    friend: "Message");})
-                );
-                }
-              }
-            ), 
-          ]),
+              ), 
+            ]),
+          ),
         );
       },
     );
