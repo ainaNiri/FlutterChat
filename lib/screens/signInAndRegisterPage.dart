@@ -21,7 +21,7 @@ class SignInAndRegisterPage extends StatefulWidget {
 }
 
 
-class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProviderStateMixin {
+class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     duration: const Duration(seconds: 2),
     vsync: this,
@@ -50,8 +50,11 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage>with TickerProv
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    nameController.dispose();
+    super.dispose();
   }
 
   @override

@@ -37,5 +37,5 @@ String printDate(String lastMessageDate){
   if(now.hour.compareTo(DateTime.parse(lastMessageDate).hour) == -1)
     return "Yesterday, " +  DateFormat.Hm().format(DateTime.parse(lastMessageDate)).toString();
 
-  return DateTime.parse(lastMessageDate).hour.toString() + ":"  +DateTime.parse(lastMessageDate).minute.toString();
+  return "";
 }

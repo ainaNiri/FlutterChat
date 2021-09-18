@@ -73,8 +73,10 @@ class _ChatPageState extends State<ChatPage>{
                     if(model.isEmpty())
                       // return Center(child: CircularProgressIndicator());
                       return _buildAlias();                   
-                    else 
-                      return ConversationList(range: model.length(), friends: model);                  
+                    else{
+                      model.sort();
+                      return ConversationList(range: model.length(), friends: model);
+                    }                  
                   },
                 )                                          
               )            

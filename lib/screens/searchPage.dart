@@ -32,7 +32,12 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     _filter.addListener(() { _function();});
-    firstRendering = true;
+  }
+
+  @override
+  void dispose(){
+    _filter.dispose();
+    super.dispose();
   }
 
   Widget build(BuildContext context) {
@@ -63,7 +68,7 @@ class _SearchPageState extends State<SearchPage> {
                 )
                 );
             });           
-            filteredNames.shuffle();
+            //filteredNames.shuffle();
             return ListUser(users: filteredNames, isForSearch: true,);
           }
           return Container();

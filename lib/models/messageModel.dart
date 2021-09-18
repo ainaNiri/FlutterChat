@@ -1,9 +1,10 @@
 class Message{
   String content;
   String? sender;
+  String? fileName;
   String createAt;
 
-  Message({required this.content, this.sender, required this.createAt});
+  Message({required this.content, this.sender, required this.createAt, this.fileName});
 
   bool isImage(){
     if(content.startsWith("http"))

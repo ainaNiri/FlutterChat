@@ -11,8 +11,9 @@ class WidgetOption extends StatefulWidget{
   IconData icon;
   String section;
   bool isMe;
+  String? text;
 
-  WidgetOption({required this.index, required this.icon, required this.section, required this.isMe});
+  WidgetOption({required this.index, required this.icon, required this.section, required this.isMe, this.text});
   
   @override
   _WidgetOptionState createState() => _WidgetOptionState();
@@ -70,11 +71,14 @@ class _WidgetOptionState extends State<WidgetOption>{
                     Expanded(child: Text(widget.section, style: TextStyle(color: textPrimaryColor,fontWeight: FontWeight.w300, fontSize: 25))),
                     if(widget.isMe)
                       IconButton(icon: Icon(Icons.edit),color: iconSecondaryColor, onPressed: () =>
-                        showBottomSheet(context: context, builder: (ctx) => _buildEditPage(ctx, widget.section))                  
+                        showModalBottomSheet(context: context, builder: (ctx) => _buildEditPage(ctx, widget.section))                  
                     )
                   ]
                 ),
-                Consumer<ListModel>(builder :(context, list, child) => Text(list.at(widget.index), style: TextStyle(color: textSecondaryColor)))
+                if(widget.isMe)
+                  Consumer<ListModel>(builder :(context, list, child) => Text(list.at(widget.index), style: TextStyle(color: textSecondaryColor)))
+                else
+                  Text(widget.text ?? "", style: TextStyle(color: textSecondaryColor))
               ]
             )
           )

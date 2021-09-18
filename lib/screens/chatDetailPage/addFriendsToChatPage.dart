@@ -35,55 +35,53 @@ class _AddFriendsToChatState extends State<AddFriendsToChat> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                child: Consumer<FriendsModel>(
-                  builder: (context, model, child){
-                    if(model.isEmpty())
-                      return Center(child: CircularProgressIndicator());
-                    else
-                      return ListView.builder(
-                        itemCount: model.length(),
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index){
-                          if(!model.friends[index].isInChat(chatMembers) && !model.friends[index].chatId.startsWith("grp"))
-                            return CheckboxListTile(
-                              activeColor: Colors.blue,
-                              value: selectedFriendsId.contains(model.friends[index].id),
-                              title: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage: NetworkImage(model.friends[index].image),
-                                    maxRadius: 30,
-                                  ),
-                                  SizedBox(width: MediaQuery.of(context).size.width * 0.04,),
-                                  Text(
-                                    model.friends[index].name,
-                                    style: TextStyle(color: textPrimaryColor)
-                                  )
-                                ],
-                              ),
-                              onChanged: (selected){
-                                setState((){
-                                  if (selected == true) {
-                                    setState(() {
-                                      selectedFriendsId.add(model.friends[index].id);
-                                    });
-                                  }
-                                  else{
-                                    setState(() {
-                                      selectedFriendsId.remove(model.friends[index].id);
-                                    });
-                                  }
-                                });
-                              },
-                            );
-                          else
-                            return Container();
-                        },
-                      );
-                  }
-                ),
+              child: Consumer<FriendsModel>(
+                builder: (context, model, child){
+                  if(model.isEmpty())
+                    return Center(child: CircularProgressIndicator());
+                  else
+                    return ListView.builder(
+                      itemCount: model.length(),
+                      shrinkWrap: true,
+                      physics: BouncingScrollPhysics(),
+                      itemBuilder: (context, index){
+                        if(!model.friends[index].isInChat(chatMembers) && !model.friends[index].chatId.startsWith("grp"))
+                          return CheckboxListTile(
+                            activeColor: Colors.blue,
+                            value: selectedFriendsId.contains(model.friends[index].id),
+                            title: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: NetworkImage(model.friends[index].image),
+                                  maxRadius: 30,
+                                ),
+                                SizedBox(width: MediaQuery.of(context).size.width * 0.04,),
+                                Text(
+                                  model.friends[index].name,
+                                  style: TextStyle(color: textPrimaryColor)
+                                )
+                              ],
+                            ),
+                            onChanged: (selected){
+                              setState((){
+                                if (selected == true) {
+                                  setState(() {
+                                    selectedFriendsId.add(model.friends[index].id);
+                                  });
+                                }
+                                else{
+                                  setState(() {
+                                    selectedFriendsId.remove(model.friends[index].id);
+                                  });
+                                }
+                              });
+                            },
+                          );
+                        else
+                          return Container();
+                      },
+                    );
+                }
               ),
             ),
             Align(

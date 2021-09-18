@@ -61,7 +61,7 @@ class ListUser extends StatelessWidget {
                           }
                         )
                     );}
-                  else if (friendId != 1){
+                  else if (friendId != -1){
                     Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context){ return ProfilePage(

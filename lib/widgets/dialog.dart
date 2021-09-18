@@ -1,6 +1,7 @@
  import 'package:flutter/material.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/utilities/function.dart';
+import 'package:myapp/widgets/loadingDialog.dart';
 
 BuildDialog(BuildContext context, String imagePath)
 {
@@ -18,8 +19,9 @@ BuildDialog(BuildContext context, String imagePath)
           TextButton(
             onPressed: () async {
               await requestPermission();
-              await saveNetworkImage(imagePath); 
-              Navigator.pop(context, 'OK');
+              showLoadingIndicator(context);
+              await saveNetworkImage(imagePath);
+              Navigator.of(context).pop();
             },
             child: Text('OK', style: TextStyle(color: Colors.lightBlue)),
           ),

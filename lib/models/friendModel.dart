@@ -88,4 +88,8 @@ class FriendsModel extends ChangeNotifier{
   int whereChatId(String chatId){
     return _friends.indexWhere((element) => element.chatId == chatId);
   }
+
+  void sort(){
+    _friends.sort((a, b) => DateTime.parse(b.lastMessageTime).compareTo( DateTime.parse(a.lastMessageTime)));
+  }
 }

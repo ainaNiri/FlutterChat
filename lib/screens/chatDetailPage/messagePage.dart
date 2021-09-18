@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:myapp/models/chatMembersModel.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/models/messageModel.dart';
@@ -39,18 +40,14 @@ class _ChatDetailPage extends State<ChatDetailPage> {
   final ScrollController _controller = ScrollController();
   final messageController = TextEditingController();
   final db = FirebaseDatabase.instance.reference();
-  bool _needsScroll = false;
+  bool _needsScroll = true;
   
   void initState(){
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      if(_controller.hasClients){
-        _controller.animateTo(
-        _controller.position.maxScrollExtent,
-        duration: Duration(seconds: 1),
-        curve: Curves.fastOutSlowIn,);
-      }}
-    );
+    SchedulerBinding.instance!.addPostFrameCallback((_) {
+      if(_controller.hasClients)
+        _controller.jumpTo(_controller.position.maxScrollExtent);
+    });
   }
 
   void dispose(){
@@ -63,12 +60,9 @@ class _ChatDetailPage extends State<ChatDetailPage> {
      if (_needsScroll) {
       Future.delayed(Duration(microseconds: 
       500),(){
-      WidgetsBinding.instance!.addPostFrameCallback(
+      SchedulerBinding.instance!.addPostFrameCallback(
         (_) {if(_controller.hasClients){
-          _controller.animateTo(
-          _controller.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.fastOutSlowIn,);
+          _controller.jumpTo(_controller.position.maxScrollExtent);
         }});});
       _needsScroll = false;
     }
@@ -145,170 +139,170 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                     splashRadius: 20.0, 
                     icon: Icon(Icons.person_add, color: iconColor)
                   ),
-                IconButton(
-                  onPressed: () => Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (context) => OptionsPage(chatId: widget.id, chatName: widget.friend.name, chatImage:  widget.friend.image))
-                  ),
-                  splashRadius: 20.0,
-                  icon: Icon(Icons.meeting_room, color: iconColor)
-                )
+                if(widget.id.startsWith("grp"))
+                  IconButton(
+                    onPressed: () => Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => OptionsPage(chatId: widget.id, chatName: widget.friend.name, chatImage:  widget.friend.image))
+                    ),
+                    splashRadius: 20.0,
+                    icon: Icon(Icons.meeting_room, color: iconColor)
+                  )
                 ]
               )
             )
           ),
         ),
-        body: SingleChildScrollView(
-          child: Container(
-            height: MediaQuery.of(context).size.height - 80,
-            padding: EdgeInsets.only(bottom: 15),
-            child: Stack(children: <Widget>[
-              Container(
-                margin: EdgeInsets.only(bottom: 100),               
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: StreamBuilder(
-                    stream:FirebaseDatabase.instance.reference().child('chats/messages').child(widget.id).onValue,
-                    builder: (context, AsyncSnapshot<Event> snapshot) {
-                      if (snapshot.hasData){
-                        messages.clear();
-                        if(snapshot.data?.snapshot.value != null)
-                        {              
-                          snapshot.data!.snapshot.value.forEach((key, value){
-                            messages.add(new Message(
-                              content: value["content"],
-                              sender: value["userSender"],
-                              createAt: value["file_name"] != null ? value["file_name"] : key.toString().substring(0, 19) + "." + key.toString().substring(19)
-                            ));
-                          });            
-                        
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            controller: _controller,
-                            itemCount: messages.length,
-                            padding: EdgeInsets.only(top: 10, bottom: 10),
-                            itemBuilder: (context, index) {
-                              if(messages[index].sender == currentUser.name){
-                                return Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: messages[index].isImage() ? _buildImage(index) : 
-                                  (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
-                                    _buildMessage(messageUserColor, messages[index].content,messages[index].createAt,))
-                                );
-                                    
-                              }
-                              else if(messages[index].sender == null)
-                                return _buildDate(messages[index].content);
-                              else {
-                                return Align(
-                                  alignment: Alignment.bottomLeft,
-                                  child: messages[index].isImage() ? _buildImage(index) : 
-                                  (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
-                                    _buildMessage(messageFriendColor, messages[index].content,messages[index].createAt,))
-                                );                                   
-                              }
-                            }                             
-                          );
-                        }
-                        return Center(
-                          child: Column(
-                            children: [
-                              Image.asset("assets/images/hello.jpg"),
-                              SizedBox(height: 40,),
-                              Text("Say hello to your new friend", style: TextStyle(color: textPrimaryColor,  fontSize: 17, fontWeight: FontWeight.w300))
-                            ],
-                          )
+        body: Container(
+          height: MediaQuery.of(context).size.height - 50,
+          padding: EdgeInsets.only(bottom: 15),
+          child: Column(children: <Widget>[
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: StreamBuilder(
+                  stream:FirebaseDatabase.instance.reference().child('chats/messages').child(widget.id).onValue,
+                  builder: (context, AsyncSnapshot<Event> snapshot) {
+                    if (snapshot.hasData){
+                      messages.clear();
+                      if(snapshot.data?.snapshot.value != null)
+                      {              
+                        snapshot.data!.snapshot.value.forEach((key, value){
+                          messages.add(new Message(
+                            content: value["content"],
+                            sender: value["userSender"],
+                            createAt: value["file_name"] != null ? value["file_name"] : key.toString().substring(0, 19) + "." + key.toString().substring(19)
+                          ));
+                        });            
+                      
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          controller: _controller,
+                          itemCount: messages.length,
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          itemBuilder: (context, index) {
+                            if(messages[index].sender == currentUser.name){
+                              return Align(
+                                alignment: Alignment.bottomRight,
+                                child: messages[index].isImage() ? _buildImage(index) : 
+                                (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
+                                  _buildMessage(messageUserColor, messages[index].content,messages[index].createAt,))
+                              );
+                                  
+                            }
+                            else if(messages[index].sender == null)
+                              return _buildDate(messages[index].content);
+                            else {
+                              return Align(
+                                alignment: Alignment.bottomLeft,
+                                child: messages[index].isImage() ? _buildImage(index) : 
+                                (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
+                                  _buildMessage(messageFriendColor, messages[index].content,messages[index].createAt,))
+                              );                                   
+                            }
+                          }                             
                         );
                       }
                       return Center(
-                          child: CircularProgressIndicator()
+                        child: Column(
+                          children: [
+                            Image.asset("assets/images/hello.jpg"),
+                            SizedBox(height: 40,),
+                            Text("Say hello to your new friend", style: TextStyle(color: textPrimaryColor,  fontSize: 17, fontWeight: FontWeight.w300))
+                          ],
+                        )
                       );
                     }
-                  ),
-                )             
+                    return Center(
+                        child: CircularProgressIndicator()
+                    );
+                  }
+                ),
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Card(
-                  margin: EdgeInsets.only(bottom: 12),
-                  elevation: 1,
-                  shadowColor: Colors.grey.shade50,
-                  color: inputMessageColor,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  child: Container(
-                    padding: EdgeInsets.all(10),
-                    height: 60,
-                    width: MediaQuery.of(context).size.width-40,
-                    child: Center(
-                      child: Row(children: <Widget>[
-                        IconButton(
-                          iconSize: 25,
-                          color: iconColor,
-                          splashRadius: 30.0,
-                          splashColor: Colors.white,
-                          onPressed: () {
-                            showModalBottomSheet(context: context, builder: (ctx)=> _buildChoice(ctx));
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Card(
+                margin: EdgeInsets.only(bottom: 6),
+                elevation: 1,
+                shadowColor: Colors.grey.shade50,
+                color: inputMessageColor,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  height: 60,
+                  width: MediaQuery.of(context).size.width-40,
+                  child: Center(
+                    child: Row(children: <Widget>[
+                      IconButton(
+                        iconSize: 25,
+                        color: iconColor,
+                        splashRadius: 30.0,
+                        splashColor: Colors.white,
+                        onPressed: () {
+                          showModalBottomSheet(context: context, builder: (ctx)=> _buildChoice(ctx));
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+                      SizedBox(
+                        width: 15,
+                      ),
+                      Expanded(
+                        child: TextField(
+                          onTap: (){
+                            setState((){
+                              _needsScroll = true;
+                            });
                           },
-                          icon: Icon(Icons.add),
-                        ),
-                        SizedBox(
-                          width: 15,
-                        ),
-                        Expanded(
-                          child: TextField(
-                            onTap: (){
-                              setState((){
-                                _needsScroll = true;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              hintText: "Type message...",
-                              hintStyle: TextStyle(color: hintColor),
-                              border: InputBorder.none
-                            ),
-                            controller: messageController,
-                          )
-                        ),
-                        SizedBox(width: 15),
-                        FloatingActionButton(
-                          onPressed: ()async{
-                            if(messageController.text.trim().isNotEmpty){
-                              await addData(messageController.text, null);                     
-                              messageController.text = "";
-                              setState((){
-                                _needsScroll = true;
-                              });
-                            }
-                          },
-                          child: Icon(Icons.send, color: Colors.white, size: 18),
-                          backgroundColor: Colors.blue.shade300,
-                          elevation: 0
+                          decoration: InputDecoration(
+                            hintText: "Type message...",
+                            hintStyle: TextStyle(color: hintColor),
+                            border: InputBorder.none
+                          ),
+                          controller: messageController,
                         )
-                      ]
-                    ))
-                  )
-                  )
+                      ),
+                      SizedBox(width: 15),
+                      FloatingActionButton(
+                        onPressed: ()async{
+                          if(messageController.text.trim().isNotEmpty){
+                            await addData(messageController.text, null);                     
+                            messageController.text = "";
+                            setState((){
+                              _needsScroll = true;
+                            });
+                          }
+                        },
+                        child: Icon(Icons.send, color: Colors.white, size: 18),
+                        backgroundColor: Colors.blue.shade300,
+                        elevation: 0
+                      )
+                    ]
+                  ))
                 )
-              ]
-            )
-              ),
+                )
+              )
+            ]
+          )
         )
     );
   }
 
   Future<void> addData(String data, String? fileName) async{
 
-    String date = printDate(messages.last.createAt);
+    if(messages.isNotEmpty){
+      String date = printDate(messages.last.createAt);
 
-    if(date != ""){
-      await db.child("chats").child('messages').child(widget.id).child(DateTime.now().toString().replaceAll(".", "")).set({
-        'content': DateTime.now().toString(),
-      });
+      if(date != ""){
+        await db.child("chats").child('messages').child(widget.id).child(DateTime.now().toString().replaceAll(".", "")).set({
+          'content': DateTime.now().toString(),
+        });
+      }
     }
 
     await db.child("chats").child('messages').child(widget.id).child(DateTime.now().toString().replaceAll(".", "")).set({
-      'content': data,
-      'userSender': currentUser.name,
+    'content': data,
+    'userSender': currentUser.name,
     });
 
     if(data.startsWith("https"))
@@ -415,9 +409,9 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                 child: Center(
                   child: CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
                   )
                 ),                                       
               );

@@ -41,6 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
     "Profile",
     "School",
   ];
+  List <String> about = [];
 
   @override
   Widget build(BuildContext context) {
@@ -134,10 +135,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 future : FirebaseDatabase.instance.reference().child('users').child("users_about").child(widget.person.id).once(),
                 builder:(context, AsyncSnapshot<DataSnapshot> snapshot){ 
                   if(snapshot.hasData){
-                    lists.clear();
+                    about.clear();
                     Map<dynamic, dynamic> value1 = snapshot.data!.value;
                     value1.forEach((key, value){
-                      lists.add(value);
+                      about.add(value);
                     });
                     return _buildList();
                   }
@@ -165,7 +166,8 @@ class _ProfilePageState extends State<ProfilePage> {
           icon: icon[index],
           section: section[index],
           index: index,
-          isMe: widget.person.id == currentUser.id ? true : false
+          isMe: widget.person.id == currentUser.id ? true : false,
+          text: widget.person.id == currentUser.id ? null : about[index],
         );
       }                    
     ));            
