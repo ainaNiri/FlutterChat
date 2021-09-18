@@ -1,6 +1,6 @@
 # myapp
 
-A new Flutter project.
+A chat made with flutter and Firebase
 
 ## Getting Started
 
