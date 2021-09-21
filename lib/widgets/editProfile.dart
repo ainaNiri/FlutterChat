@@ -25,6 +25,12 @@ class _EditProfileState extends State<EditProfile> {
   TextEditingController nameController = new TextEditingController();
 
   @override
+  void dispose(){
+    nameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     _imageNetwork = widget.image;
     return Scaffold(

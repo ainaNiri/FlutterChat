@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:myapp/models/chatMembersModel.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/models/messageModel.dart';
@@ -40,30 +41,32 @@ class _ChatDetailPage extends State<ChatDetailPage> {
   final ScrollController _controller = ScrollController();
   final messageController = TextEditingController();
   final db = FirebaseDatabase.instance.reference();
-  bool _needsScroll = true;
+  late final keyboardVisibilityController = KeyboardVisibilityController();
+  bool _needsScroll = false;
   
   void initState(){
     super.initState();
-    SchedulerBinding.instance!.addPostFrameCallback((_) {
-      if(_controller.hasClients)
-        _controller.jumpTo(_controller.position.maxScrollExtent);
-    });
   }
 
   void dispose(){
+    _controller.dispose();
     messageController.dispose();
     super.dispose();
   }
 
+  Future<void> _postInit() async {
+    await Future.delayed(Duration(milliseconds: 100));
+  _controller.jumpTo(_controller.position.maxScrollExtent);
+  }
+
   @override
   Widget build(BuildContext context) {
-     if (_needsScroll) {
-      Future.delayed(Duration(microseconds: 
-      500),(){
+
+    if(_needsScroll){
       SchedulerBinding.instance!.addPostFrameCallback(
         (_) {if(_controller.hasClients){
           _controller.jumpTo(_controller.position.maxScrollExtent);
-        }});});
+        }});
       _needsScroll = false;
     }
 
@@ -160,63 +163,65 @@ class _ChatDetailPage extends State<ChatDetailPage> {
             Expanded(
               child: Align(
                 alignment: Alignment.bottomCenter,
-                child: StreamBuilder(
-                  stream:FirebaseDatabase.instance.reference().child('chats/messages').child(widget.id).onValue,
-                  builder: (context, AsyncSnapshot<Event> snapshot) {
-                    if (snapshot.hasData){
-                      messages.clear();
-                      if(snapshot.data?.snapshot.value != null)
-                      {              
-                        snapshot.data!.snapshot.value.forEach((key, value){
-                          messages.add(new Message(
-                            content: value["content"],
-                            sender: value["userSender"],
-                            createAt: value["file_name"] != null ? value["file_name"] : key.toString().substring(0, 19) + "." + key.toString().substring(19)
-                          ));
-                        });            
-                      
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          controller: _controller,
-                          itemCount: messages.length,
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          itemBuilder: (context, index) {
-                            if(messages[index].sender == currentUser.name){
-                              return Align(
-                                alignment: Alignment.bottomRight,
-                                child: messages[index].isImage() ? _buildImage(index) : 
-                                (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
-                                  _buildMessage(messageUserColor, messages[index].content,messages[index].createAt,))
-                              );
-                                  
-                            }
-                            else if(messages[index].sender == null)
-                              return _buildDate(messages[index].content);
-                            else {
-                              return Align(
-                                alignment: Alignment.bottomLeft,
-                                child: messages[index].isImage() ? _buildImage(index) : 
-                                (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
-                                  _buildMessage(messageFriendColor, messages[index].content,messages[index].createAt,))
-                              );                                   
-                            }
-                          }                             
+                child: Container(
+                  margin: EdgeInsets.only(bottom: 20),
+                  child: StreamBuilder(
+                    stream:FirebaseDatabase.instance.reference().child('chats/messages').child(widget.id).onValue,
+                    builder: (context, AsyncSnapshot<Event> snapshot) {
+                      if (snapshot.hasData){
+                        messages.clear();
+                        if(snapshot.data?.snapshot.value != null)
+                        {              
+                          snapshot.data!.snapshot.value.forEach((key, value){
+                            messages.add(new Message(
+                              content: value["content"],
+                              sender: value["userSender"],
+                              createAt: value["file_name"] != null ? value["file_name"] : key.toString().substring(0, 19) + "." + key.toString().substring(19)
+                            ));
+                          });            
+                          _postInit();
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            controller: _controller,
+                            itemCount: messages.length,
+                            padding: EdgeInsets.only(top: 10, bottom: 10),
+                            itemBuilder: (context, index) {
+                              if(messages[index].sender == currentUser.name){
+                                return Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: messages[index].isImage() ? _buildImage(index) : 
+                                  (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
+                                    _buildMessage(messageUserColor, messages[index].content,messages[index].createAt,))
+                                );                                   
+                              }
+                              else if(messages[index].sender == null)
+                                return _buildDate(messages[index].content);
+                              else {
+                                return Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: messages[index].isImage() ? _buildImage(index) : 
+                                  (messages[index].isFile() ? _buildFile(messages[index].createAt, messages[index].content) : 
+                                    _buildMessage(messageFriendColor, messages[index].content,messages[index].createAt,))
+                                );                                   
+                              }
+                            }                             
+                          );
+                        }
+                        return Center(
+                          child: Column(
+                            children: [
+                              Image.asset("assets/images/hello.jpg"),
+                              SizedBox(height: 40,),
+                              Text("Say hello to your new friend", style: TextStyle(color: textPrimaryColor,  fontSize: 17, fontWeight: FontWeight.w300))
+                            ],
+                          )
                         );
                       }
                       return Center(
-                        child: Column(
-                          children: [
-                            Image.asset("assets/images/hello.jpg"),
-                            SizedBox(height: 40,),
-                            Text("Say hello to your new friend", style: TextStyle(color: textPrimaryColor,  fontSize: 17, fontWeight: FontWeight.w300))
-                          ],
-                        )
+                          child: CircularProgressIndicator()
                       );
                     }
-                    return Center(
-                        child: CircularProgressIndicator()
-                    );
-                  }
+                  ),
                 ),
               ),
             ),
@@ -250,8 +255,11 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                       Expanded(
                         child: TextField(
                           onTap: (){
-                            setState((){
-                              _needsScroll = true;
+                            keyboardVisibilityController.onChange.listen((bool visible){
+                              if(visible)
+                                setState((){
+                                  _needsScroll = true;
+                                });
                             });
                           },
                           decoration: InputDecoration(
@@ -291,7 +299,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
   Future<void> addData(String data, String? fileName) async{
 
     if(messages.isNotEmpty){
-      String date = printDate(messages.last.createAt);
+      String date = dateDifference(messages.last.createAt);
 
       if(date != ""){
         await db.child("chats").child('messages').child(widget.id).child(DateTime.now().toString().replaceAll(".", "")).set({

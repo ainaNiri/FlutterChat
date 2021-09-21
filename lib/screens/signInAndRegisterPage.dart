@@ -23,7 +23,7 @@ class SignInAndRegisterPage extends StatefulWidget {
 
 class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
-    duration: const Duration(seconds: 2),
+    duration: const Duration(seconds: 3),
     vsync: this,
   )..forward();
   late final Animation<double> _animation = CurvedAnimation(

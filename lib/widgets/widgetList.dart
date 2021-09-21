@@ -66,7 +66,7 @@ class _WidgetOptionState extends State<WidgetOption>{
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Icon(widget.icon, color: iconSecondaryColor,),
+                    Icon(widget.icon, color: iconSecondaryColor, size: 20,),
                     SizedBox(width: 10,),
                     Expanded(child: Text(widget.section, style: TextStyle(color: textPrimaryColor,fontWeight: FontWeight.w300, fontSize: 25))),
                     if(widget.isMe)
