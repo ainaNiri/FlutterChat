@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/widgets/imageView.dart';
-import 'package:path/path.dart';
 
 // ignore: must_be_immutable
 class Collection extends StatelessWidget {

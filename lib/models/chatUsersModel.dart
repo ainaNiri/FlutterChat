@@ -25,8 +25,9 @@ class Friend  {
   String lastMessageTime;
   String lastMessageType;
   bool connected;
+  String token;
 
-  Friend({required this.id, required this.chatId, 
+  Friend({required this.id, required this.chatId, required this.token,
     required this.image, required this.name, 
     required this.lastMessageContent, required this.lastMessageTime, 
     required this.lastMessageType, required this.connected

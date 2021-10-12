@@ -8,6 +8,7 @@ import 'package:myapp/screens/actualityPage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 //import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/notifications.dart';
 import 'dart:io';
 
 import 'package:myapp/widgets/loadingDialog.dart';
@@ -60,6 +61,7 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
   @override
   void initState() {
     super.initState();
+    getNotifications(context);
   }
 
   @override

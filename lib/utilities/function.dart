@@ -43,16 +43,3 @@ requestPermission() async {
   print(info);
   
 }
-
-// Future<void> downloadFile() async {
-//   Directory appDocDir = await getApplicationDocumentsDirectory();
-//   File downloadToFile = File('${appDocDir.path}/download-logo.png');
-
-//   try {
-//     await firebase_storage.FirebaseStorage.instance
-//         .ref('uploads/logo.png')
-//         .writeToFile(downloadToFile);
-//   } on firebase_core.FirebaseException catch (e) {
-//     // e.g, e.code == 'canceled'
-//   }
-// }

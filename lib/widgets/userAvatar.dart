@@ -14,8 +14,8 @@ Widget UserAvatar(dynamic image, bool connected, double radius){
             bottom: 2.0,
             right: 2.5,
             child: Container(
-              width: 15,
-              height: 15,
+              width: 12,
+              height: 12,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: Colors.green.shade500

@@ -35,9 +35,9 @@ class ListUser extends StatelessWidget {
                   radius: 27,
                 ),
                 title: Text(this.users[index].name, style: TextStyle(color: textPrimaryColor),),
-                trailing: isForSearch ? IconButton(onPressed: (){}, icon:  (friendId != -1) ? Icon(Icons.message_sharp, color: iconSecondaryColor,): 
+                trailing: isForSearch ? IconButton(onPressed: (){}, icon:  (friendId != -1) ? Icon(Icons.message_sharp, color: Colors.blue.shade700,): 
                   (users[index].name.toLowerCase() == currentUser.name.toLowerCase() ? 
-                    Icon(Icons.account_box_rounded, color: iconSecondaryColor,) : Icon(Icons.person_add, color: iconSecondaryColor)
+                    Icon(Icons.account_box_rounded, color: Colors.blue.shade700,) : Icon(Icons.person_add, color: Colors.blue.shade700)
                   )
                 ) : null,
                 onTap: (){

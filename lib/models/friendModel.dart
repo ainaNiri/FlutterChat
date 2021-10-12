@@ -23,7 +23,7 @@ class FriendsModel extends ChangeNotifier{
 
   Future <void> _listenToLastMessage() async{
     _stream = _userRef.child("users_friends").child(currentUser.id).onChildAdded.listen((data) {
-      _friends.add(new Friend(id:" ", chatId: data.snapshot.value["chatId"], name: " ", image: " ", lastMessageContent: " ", lastMessageTime: DateTime.now().toString(), lastMessageType: " ", connected: true));
+      _friends.add(new Friend(id:" ", chatId: data.snapshot.value["chatId"], name: " ", image: " ", lastMessageContent: " ", lastMessageTime: DateTime.now().toString(), lastMessageType: " ", connected: true, token: ""));
       _friendStream.add(_userRef.child("users_friends").child(currentUser.id).child(data.snapshot.key!).onValue.listen((event) {
         int index = whereChatId(data.snapshot.value["chatId"].toString());
         if(data.snapshot.value["chatId"].toString().startsWith("grp")){             
@@ -44,8 +44,9 @@ class FriendsModel extends ChangeNotifier{
       }));
       _connectedStream.add(_userRef.child("users_connected").child(data.snapshot.key!).onValue.listen((event){
         int index = whereChatId( data.snapshot.value["chatId"].toString());
-        if(! data.snapshot.value["chatId"].toString().startsWith("grp")){
-          _friends[index].connected = event.snapshot.value;
+        if(!data.snapshot.value["chatId"].toString().startsWith("grp")){
+          _friends[index].connected = event.snapshot.value['connected'];
+          _friends[index].token = event.snapshot.value['token'];
         }
         notifyListeners();
       }));
@@ -91,5 +92,9 @@ class FriendsModel extends ChangeNotifier{
 
   void sort(){
     _friends.sort((a, b) => DateTime.parse(b.lastMessageTime).compareTo( DateTime.parse(a.lastMessageTime)));
+  }
+
+  Friend whereId(String id){
+    return _friends.firstWhere((element) => element.id == id);
   }
 }

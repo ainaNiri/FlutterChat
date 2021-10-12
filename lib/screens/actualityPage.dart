@@ -1,11 +1,16 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:myapp/models/chatUsersModel.dart';
+import 'package:myapp/screens/chatDetailPage/messagePage.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/screens/FriendsPage.dart';
 import 'package:myapp/customIcon/app_icons.dart';
 import 'package:myapp/screens/notificationsPage.dart';
 import 'package:myapp/screens/profilePage.dart';
+import 'package:myapp/utilities/notifications.dart';
 import 'package:myapp/widgets/appBar.dart';
 import 'package:myapp/widgets/chatPage.dart';
 import 'package:myapp/widgets/drawer.dart';
@@ -29,6 +34,11 @@ class _ActualityPage extends State<ActualityPage>{
     NotificationsPage(),    
   ];
 
+  void initState() {
+    super.initState();
+    initFirebaseMessaging();
+  }
+  
   @override
   Widget build(BuildContext context) {
     final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();

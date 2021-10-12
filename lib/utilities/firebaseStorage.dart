@@ -63,11 +63,11 @@ Future download2(Dio dio, String url, String fileName) async {
         onReceiveProgress: showDownloadProgress,
         //Received data with List<int>
         options: Options(
-            responseType: ResponseType.bytes,
-            followRedirects: false,
-            validateStatus: (status) {
-              return status! < 500;
-            }),
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+          validateStatus: (status) {
+            return status! < 500;
+          }),
       );
       print(response.headers);
       File file = File("/storage/emulated/0/Download/flutterChat/files/$fileName");
