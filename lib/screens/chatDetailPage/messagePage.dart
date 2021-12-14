@@ -48,6 +48,8 @@ class _ChatDetailPage extends State<ChatDetailPage> {
   
   void initState(){
     super.initState();
+    print("ok");
+    FirebaseDatabase.instance.reference().child("chats/chat_lastMessage").child("${widget.id}/${currentUser.id}").remove();
     // FirebaseMessaging.instance
     //     .getInitialMessage()
     //     .then((RemoteMessage? message) {
@@ -330,6 +332,8 @@ class _ChatDetailPage extends State<ChatDetailPage> {
     'content': data,
     'userSender': currentUser.name,
     });
+
+    await db.child("chats/chat_lastMessage").child(widget.id).set({widget.friend.id : true});
 
     if(data.startsWith("https"))
     {

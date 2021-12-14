@@ -74,7 +74,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       },
                       trailing: ElevatedButton(
                         onPressed: ()async {
-                          addFriend(notifications[index]);                      
+                          await addFriend(notifications[index]);                      
                           text[index] = "Message";
                           setState((){
                             
@@ -98,7 +98,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  void addFriend(User friend) async{
+  Future <void> addFriend(User friend) async{
     late String chatId;
     final chatRef = FirebaseDatabase.instance.reference().child("chats");
     final userRef =  FirebaseDatabase.instance.reference().child("users/users_friends");

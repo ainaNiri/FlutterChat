@@ -3,7 +3,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/models/listModel.dart';
-import 'package:myapp/screens/exemple.dart';
 import 'package:myapp/screens/signInAndRegisterPage.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';

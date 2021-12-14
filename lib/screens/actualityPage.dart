@@ -1,10 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:myapp/models/chatUsersModel.dart';
-import 'package:myapp/screens/chatDetailPage/messagePage.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/screens/FriendsPage.dart';
 import 'package:myapp/customIcon/app_icons.dart';

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:myapp/models/chatUsersModel.dart';
@@ -208,16 +209,15 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
                                     ),
                                     ElevatedButton.icon(
                                       onPressed: () async {
-                                        // final snackBar = SnackBar(
-                                        //   content : Text("Process data ... ")
-                                        // );
-                                        // ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                        // await _signInWithFacebook();
-                                        // Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
+                                        showLoadingIndicator(context);
+                                        await _signInWithFacebook();
+                                        Navigator.of(context).pop();
+                                        await Future.delayed(Duration(milliseconds: 600));
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
                                                         
                                       },
                                       icon:  Icon(Icons.facebook_rounded, color: Colors.white,),
-                                      label: Text("facebook", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                                      label: Text("Facebook", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                                       style: smallButtonStyle(Colors.lightBlue)
                                     ),
                                   ],
@@ -362,17 +362,17 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
     await FirebaseDatabase.instance.reference().child('users/users_profile').child(currentUser.id).once().then((value){currentUser.name = value.value['name'];currentUser.image = value.value['image'];});
   }
 
-  // Future <void> _signInWithFacebook() async {
-  //   // Trigger the sign-in flow
-  //   final LoginResult loginResult = await FacebookAuth.instance.login();
+  Future <void> _signInWithFacebook() async {
+    // Trigger the sign-in flow
+    final LoginResult loginResult = await FacebookAuth.instance.login();
 
-  //   // Create a credential from the access token
-  //   final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken!.token);
+    // Create a credential from the access token
+    final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken!.token);
 
-  //   // Once signed in, return the UserCredential
-  //   UserCredential user =  await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
-  //   currentUser.id = user.user!.uid;
-  //   await FirebaseDatabase.instance.reference().child('users/users_profile').child(currentUser.id).once().then((value){currentUser.name = value.value['name'];currentUser.image = value.value['image'];});
-  //}
+    // Once signed in, return the UserCredential
+    UserCredential user =  await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+    currentUser.id = user.user!.uid;
+    await FirebaseDatabase.instance.reference().child('users/users_profile').child(currentUser.id).once().then((value){currentUser.name = value.value['name'];currentUser.image = value.value['image'];});
+  }
 
 }

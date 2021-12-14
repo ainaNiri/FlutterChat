@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/screens/chatDetailPage/messagePage.dart';
@@ -25,8 +26,7 @@ class ConversationList extends StatelessWidget{
             itemBuilder: (context, index){
               return GestureDetector(
                 onTap: ()async {
-                  this.friends.friends[index].lastMessageType = "read";
-                   Navigator.push(
+                  Navigator.push(
                     context, 
                     MaterialPageRoute(builder: (contenxt ) => ChatDetailPage(id: this.friends.friends[index].chatId, friend: this.friends.friends[index].toUser(), friendConnected: this.friends.friends[index].connected,))
                   );
@@ -64,7 +64,6 @@ class ConversationList extends StatelessWidget{
                     contentPadding: EdgeInsets.fromLTRB(12, 0, 18, 0),
                     focusColor: Colors.grey[50],
                     onTap: () async {                    
-                      this.friends.friends[index].lastMessageType = "read";
                       Navigator.push(
                         context, 
                         MaterialPageRoute(builder: (contenxt ) => ChatDetailPage(id:this.friends.friends[index].chatId, friend: this.friends.friends[index].toUser(), friendConnected: this.friends.friends[index].connected,))
@@ -77,8 +76,8 @@ class ConversationList extends StatelessWidget{
                     ),
                     title: Text(this.friends.friends[index].name, style: TextStyle(
                         color: textPrimaryColor,
-                        fontSize: 15, 
-                        fontWeight: this.friends.friends[index].lastMessageType == "read" ? FontWeight.w600 :FontWeight.bold
+                        fontSize: 16, 
+                        fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.bold : FontWeight.w500
                       )                 
                     ),                                     
                     subtitle:  Container(
@@ -87,15 +86,15 @@ class ConversationList extends StatelessWidget{
                         this.friends.friends[index].lastMessageContent == " " ? "Say hello to your new friend" : this.friends.friends[index].lastMessageContent, 
                         overflow: TextOverflow.ellipsis, 
                         style: TextStyle(
-                          fontSize: 13, 
+                          fontSize: 14, 
                           color: textSecondaryColor, 
-                          fontWeight: this.friends.friends[index].lastMessageType == "read" ? FontWeight.normal : FontWeight.bold 
+                          fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.bold : FontWeight.normal
                         )                                                                  
                       )                                                                                                                                       
                     ),                                                      
                     trailing: Text(
                       getDate(this.friends.friends[index].lastMessageTime),
-                      style: TextStyle(color: textPrimaryColor ,fontSize: 12, fontWeight: this.friends.friends[index].lastMessageType == "read" ? FontWeight.normal : FontWeight.bold)                                            
+                      style: TextStyle(color: textSecondaryColor ,fontSize: 13, fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.bold : FontWeight.normal)                                            
                     )                                                                                                                    
                   ),
                 ),
