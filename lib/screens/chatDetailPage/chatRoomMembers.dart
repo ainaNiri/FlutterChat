@@ -1,12 +1,14 @@
-import 'package:myapp/models/chatMembersModel.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/widgets/userList.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class ChatRoomMembers extends StatelessWidget {
   final String chatId;
   ChatRoomMembers({ Key? key, required this.chatId }) : super(key: key);
+
+  List<User> members = [];
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +27,16 @@ class ChatRoomMembers extends StatelessWidget {
                 child: Text("Members", style: TextStyle(color: textPrimaryColor, fontWeight: FontWeight.bold, fontSize: 30)),
               )
               ),
-              Consumer<ChatMembersModel>(
-                builder: (context, model, child){
-                  if(!model.isEmpty()){
-                    return ListUser(users: model.members, isForSearch: true,);               
+             FutureBuilder(
+                future: FirebaseDatabase.instance.reference().child("chats/members").child(chatId).once(),
+                builder: (context, AsyncSnapshot<DataSnapshot> snapshot){
+                  if(snapshot.hasData){
+                    if(snapshot.data != null){
+                      snapshot.data!.value.forEach((key, value){
+                        members.add(new User(id: key, name: value["name"], image: value["image"]));
+                      });
+                      return ListUser(users: members, isForSearch: true,);
+                    }               
                   }
                   return Container();
                 },

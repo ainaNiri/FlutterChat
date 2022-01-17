@@ -25,75 +25,72 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kPrimaryColor,
-      body: Container(
-        padding: EdgeInsets.all(10),
-        margin: EdgeInsets.only(top: 5),
-        child: FutureBuilder(
-          future: FirebaseDatabase.instance.reference().child("notifications").child("sendBy").child(currentUser.id).once(),
-          builder: (context, AsyncSnapshot<DataSnapshot> snapshot){
-            if(snapshot.connectionState == ConnectionState.done){
-              if(snapshot.data?.value != null){
-                notifications.clear();
-                text.clear();
-                Map<dynamic, dynamic> friends = snapshot.data!.value;
-                friends.forEach((key, value) {
-                  if(key != "number"){
-                    notifications.add(User(
-                      id: key,
-                      image: value["image"],
-                      name: value["name"]
-                      )
-                    );
-                    text.add("Accept");
-                    isFriend.add(value["isFriend"]);
-                  }
-                });
-              if(notifications.isNotEmpty)
-                return ListView.builder(
-                  itemCount: notifications.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index){
-                    if(isFriend[index])  
-                      return _acceptedInvitation(notifications[index]);
-                    else return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(notifications[index].image),
-                        radius: 25,
-                      ),
-                      focusColor: Colors.grey[50],
-                      title: Text(notifications[index].name, style: TextStyle(color: textPrimaryColor)),
-                      onTap: () async {
-                        if(isFriend[index])
-                          await FirebaseDatabase.instance.reference().child('notifications').child("sendBy").child(notifications[index].id).child(currentUser.id).remove();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: notifications[index], friend: text[index]))
-                        );
+    return Container(
+      padding: EdgeInsets.all(10),
+      margin: EdgeInsets.only(top: 5),
+      child: FutureBuilder(
+        future: FirebaseDatabase.instance.reference().child("notifications").child("sendBy").child(currentUser.id).once(),
+        builder: (context, AsyncSnapshot<DataSnapshot> snapshot){
+          if(snapshot.connectionState == ConnectionState.done){
+            if(snapshot.data?.value != null){
+              notifications.clear();
+              text.clear();
+              Map<dynamic, dynamic> friends = snapshot.data!.value;
+              friends.forEach((key, value) {
+                if(key != "number"){
+                  notifications.add(User(
+                    id: key,
+                    image: value["image"],
+                    name: value["name"]
+                    )
+                  );
+                  text.add("Accept");
+                  isFriend.add(value["isFriend"]);
+                }
+              });
+            if(notifications.isNotEmpty)
+              return ListView.builder(
+                itemCount: notifications.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index){
+                  if(isFriend[index])  
+                    return _acceptedInvitation(notifications[index]);
+                  else return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(notifications[index].image),
+                      radius: 25,
+                    ),
+                    focusColor: Colors.grey[50],
+                    title: Text(notifications[index].name, style: TextStyle(color: textPrimaryColor)),
+                    onTap: () async {
+                      if(isFriend[index])
+                        await FirebaseDatabase.instance.reference().child('notifications').child("sendBy").child(notifications[index].id).child(currentUser.id).remove();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ProfilePage(icon: Icon(Icons.message), person: notifications[index], friend: text[index]))
+                      );
+                    },
+                    trailing: ElevatedButton(
+                      onPressed: ()async {
+                        await addFriend(notifications[index]);                      
+                        text[index] = "Message";
+                        setState((){
+                          
+                        });
                       },
-                      trailing: ElevatedButton(
-                        onPressed: ()async {
-                          await addFriend(notifications[index]);                      
-                          text[index] = "Message";
-                          setState((){
-                            
-                          });
-                        },
-                        child: Text(text[index], style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                        style: smallButtonStyle(Colors.indigo)
-                      ),
-                    );
-                  },
-                );
-                else
-                  return Center(child: Text("You don't have any notifications", style: TextStyle(color: textPrimaryColor)));
-              }
-              return Center(child: Text("You don't have any notifications", style: TextStyle(color: textPrimaryColor)));
+                      child: Text(text[index], style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                      style: smallButtonStyle(Colors.indigo)
+                    ),
+                  );
+                },
+              );
+              else
+                return Center(child: Text("You don't have any notifications", style: TextStyle(color: textPrimaryColor)));
             }
-            return Center(child: CircularProgressIndicator.adaptive());
+            return Center(child: Text("You don't have any notifications", style: TextStyle(color: textPrimaryColor)));
           }
-        )
+          return Center(child: CircularProgressIndicator.adaptive());
+        }
       )
     );
   }
@@ -110,8 +107,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
     });
 
     await chatRef.child("members").child(chatId).set({
-      currentUser.id: true,
-      friend.id: true
+      currentUser.id: {"name": currentUser.name, "image": currentUser.image},
+      friend.id: {"name": friend.name, "image": friend.image}
     });
 
     await userRef.child(currentUser.id).child(friend.id).set({

@@ -20,6 +20,17 @@ class _SettingPageState extends State<SettingPage> {
       },
       child: Scaffold(
         backgroundColor: kPrimaryColor,
+        appBar: AppBar(
+          leading: IconButton(
+            color: iconSecondaryColor,
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ActualityPage(index: 0)))
+          ),
+          elevation: 1,
+          centerTitle: true,
+          backgroundColor: kPrimaryColor,
+          title: Text("Settings", style: TextStyle(color: textPrimaryColor),),
+        ),
         body: SafeArea(
           child: Container(
             margin: EdgeInsets.all(20),
@@ -35,7 +46,7 @@ class _SettingPageState extends State<SettingPage> {
                       if(darkMode){
                         setState(() {
                           kPrimaryColor = Colors.white;
-                          kSecondaryColor = Colors.white70;
+                          kSecondaryColor = Colors.white;
                           iconColor = Colors.grey.shade600;
                           inputMessageColor = Colors.white60;
                           iconSecondaryColor = Colors.black;

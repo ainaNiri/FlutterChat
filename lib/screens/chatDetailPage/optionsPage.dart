@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/models/chatMembersModel.dart';
 import 'package:myapp/screens/chatDetailPage/chatRoomMembers.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/widgets/editProfile.dart';
 import 'package:myapp/widgets/hero.dart';
-import 'package:provider/provider.dart';
 
 class OptionsPage extends StatelessWidget {
   String chatId;
@@ -55,10 +53,7 @@ class OptionsPage extends StatelessWidget {
                     onTap: (){
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) =>
-                        ChangeNotifierProvider(create: (_) => 
-                            ChatMembersModel(this.chatId) ,child: ChatRoomMembers(chatId: this.chatId)
-                          )
+                        MaterialPageRoute(builder: (context) => ChatRoomMembers(chatId: this.chatId)
                         )
                       );
                     }

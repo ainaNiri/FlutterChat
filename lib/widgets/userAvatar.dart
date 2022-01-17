@@ -12,13 +12,13 @@ Widget UserAvatar(dynamic image, bool connected, double radius){
         if(connected)
           Positioned(
             bottom: 2.0,
-            right: 2.5,
+            right: 3,
             child: Container(
               width: 12,
               height: 12,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: Colors.green.shade500
+                color: Color(0XFF4DBA3B)
               ),
             )
           ),

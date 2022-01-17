@@ -41,10 +41,15 @@ class Friend  {
     );
   }
 
-  bool isInChat(ChatMembersModel chatMembers){
-    if(chatMembers.members.where((element) => element.id == this.id).isNotEmpty)
-      return true;
-    return false;
+  bool isInChat(Map chatMembers){
+    bool isIn = false;
+    chatMembers.forEach((key, value) {
+      if(key == this.id){
+        isIn = true;
+        return;
+      }
+     });
+    return isIn;
   }
 
 }

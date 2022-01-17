@@ -5,6 +5,7 @@ import 'package:myapp/screens/createChatGroupPage.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/widgets/conversationList.dart';
+import 'package:myapp/widgets/routeAnimation.dart';
 import 'package:provider/provider.dart';
 
 
@@ -38,7 +39,6 @@ class _ChatPageState extends State<ChatPage>{
       child: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
         child: Container(
-          color: kPrimaryColor,
           margin: EdgeInsets.only(top: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,9 +54,8 @@ class _ChatPageState extends State<ChatPage>{
                       ),
                       TextButton.icon(
                         onPressed: () =>
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => CreateChatGroupPage()) 
+                          Navigator.of(context).push(
+                            createRoute(CreateChatGroupPage())
                         ),
                         icon: Icon(Icons.add, color: Colors.red),
                         label: Text("Add new", style: TextStyle(color: Colors.red, fontSize: 15)),
@@ -70,12 +69,14 @@ class _ChatPageState extends State<ChatPage>{
                 child:Consumer<FriendsModel>(
                   builder: (context, model, child){
                     chatPagefirstRendering = false;
-                    if(model.isEmpty())
+                    if(model.isEmpty)
                       // return Center(child: CircularProgressIndicator());
                       return _buildAlias();                   
                     else{
+                      if(model.friends.last.lastMessageContent == " ")
+                        return _buildAlias();
                       model.sort();
-                      return ConversationList(range: model.length(), friends: model);
+                      return ConversationList(range: model.length, friends: model);
                     }                  
                   },
                 )                                          

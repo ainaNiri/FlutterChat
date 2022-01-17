@@ -55,8 +55,8 @@ class _WidgetOptionState extends State<WidgetOption>{
             ? const EdgeInsets.all(4.0)
             : const EdgeInsets.only(top: 10),
         child: Card(
-          elevation: 1,
-          color: kSecondaryColor, 
+          color: kSecondaryColor,
+          elevation: 0.5,
           child: Container(
             color: kSecondaryColor,
             padding: EdgeInsets.fromLTRB(20, 20, 7, 20),
@@ -64,24 +64,44 @@ class _WidgetOptionState extends State<WidgetOption>{
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Icon(widget.icon, color: iconSecondaryColor, size: 20,),
-                    SizedBox(width: 10,),
-                    Expanded(child: Text(widget.section, style: TextStyle(color: textPrimaryColor,fontWeight: FontWeight.w300, fontSize: 25))),
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: Color(0xFF5B9FDE),
+                                ),
+                                child: Icon(widget.icon, color: kPrimaryColor, size: 15,)
+                              ),
+                              SizedBox(width: 10,),
+                              Text(widget.section, style: TextStyle(color: Color(0xFF5B9FDE),fontWeight: FontWeight.w300, fontSize: 15)),
+                            ]
+                          ),
+                          // SizedBox(height: 5,),
+                          // Container(height: 1, color: Color(0xFF5B9FDE), width: 2 * MediaQuery.of(context).size.width/3,),
+                        ],
+                      ),
+                    ),
                     if(widget.isMe)
-                      IconButton(icon: Icon(Icons.edit),color: iconSecondaryColor, onPressed: () =>
+                      IconButton(icon: Icon(Icons.edit), iconSize: 16, color: iconSecondaryColor, onPressed: () =>
                         showModalBottomSheet(context: context, builder: (ctx) => _buildEditPage(ctx, widget.section))                  
                     )
-                  ]
+                  ],
                 ),
+                SizedBox(height: 5,),
                 if(widget.isMe)
-                  Consumer<ListModel>(builder :(context, list, child) => Text(list.at(widget.index), style: TextStyle(color: textSecondaryColor)))
+                  Consumer<ListModel>(builder :(context, list, child) => Text(list.at(widget.index), style: TextStyle(fontSize: 15, color: textSecondaryColor, fontWeight: FontWeight.w400)))
                 else
-                  Text(widget.text ?? "", style: TextStyle(color: textSecondaryColor))
+                  Text(widget.text ?? "", style: TextStyle(fontSize: 15, color: textSecondaryColor, fontWeight: FontWeight.w400))
               ]
             )
-          )
+          ),
         )
       )
      );

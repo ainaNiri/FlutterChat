@@ -6,7 +6,7 @@ import 'package:myapp/models/chatUsersModel.dart';
 
 class FriendsModel extends ChangeNotifier{
   List <Friend> _friends = [];
-  final _db = FirebaseDatabase.instance.reference().child("chats/chatsroom");
+  final _db = FirebaseDatabase.instance.reference().child("chats");
   final _userRef = FirebaseDatabase.instance.reference().child("users");
 
   late StreamSubscription<Event>_stream;
@@ -14,7 +14,6 @@ class FriendsModel extends ChangeNotifier{
   List<StreamSubscription<Event>> _lastMessageStream = [];
   List<StreamSubscription<Event>> _connectedStream = [];
   List<StreamSubscription<Event>> _messageTypeStream = [];
-
 
   List <Friend> get friends => _friends;
 
@@ -49,12 +48,12 @@ class FriendsModel extends ChangeNotifier{
         }
         notifyListeners();
       }));
-      _messageTypeStream.add(_userRef.child("chats/chat_lastMessage").child(data.snapshot.value['chatId']).child(currentUser.id).onValue.listen((event){
+      _messageTypeStream.add(_db.child("chat_lastMessage").child(data.snapshot.value['chatId']).child(currentUser.id).onValue.listen((event){
         int index = whereChatId( data.snapshot.value["chatId"].toString());
         _friends[index].lastMessageType = event.snapshot.value;
         notifyListeners();
       }));
-      _lastMessageStream.add(_db.child(data.snapshot.value["chatId"]).onValue.listen((event){
+      _lastMessageStream.add(_db.child('chatsroom').child(data.snapshot.value["chatId"]).onValue.listen((event){
         int index = whereChatId( data.snapshot.value["chatId"].toString());
         _friends[index].lastMessageContent = event.snapshot.value["lastMessage"];
         _friends[index].lastMessageTime = event.snapshot.value["timestamp"];
@@ -68,23 +67,19 @@ class FriendsModel extends ChangeNotifier{
   @override
   void dispose(){
     _stream.cancel();
-    _lastMessageStream.forEach((element) {element.cancel();});
-    _friendStream.forEach((element) {element.cancel();});
-    _connectedStream.forEach((element) {element.cancel();});
-    _messageTypeStream.forEach((element) {element.cancel();});
+    for(int i = 0; i < _lastMessageStream.length; i++){
+      _lastMessageStream[i].cancel();
+      _friendStream[i].cancel();
+      _connectedStream[i].cancel();
+      _messageTypeStream[i].cancel();
+    }
     super.dispose();
   }
 
-  bool isEmpty(){
-    if(_friends.isEmpty)
-      return true;
-    return false;
-  }
+  bool get isEmpty => friends.isEmpty;
 
-  int length(){
-    return _friends.length;
-  }
-
+  int get length => _friends.length;
+  
   List <User> toUsers(){
     return List.generate(_friends.length, (index) {
       return _friends[index].toUser();

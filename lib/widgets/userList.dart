@@ -35,9 +35,34 @@ class ListUser extends StatelessWidget {
                   radius: 27,
                 ),
                 title: Text(this.users[index].name, style: TextStyle(color: textPrimaryColor),),
-                trailing: isForSearch ? IconButton(onPressed: (){}, icon:  (friendId != -1) ? Icon(Icons.message_sharp, color: Colors.blue.shade700,): 
+                trailing: isForSearch ? IconButton(onPressed: (){}, icon:  (friendId != -1) ? Container(
+                    padding: EdgeInsets.all(5) ,
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Color(0xFF5B9FDE), width: 1)
+                    ),
+                    child: Icon(Icons.message_outlined, size: 20, color: Colors.blue.shade700,)
+                  ): 
                   (users[index].name.toLowerCase() == currentUser.name.toLowerCase() ? 
-                    Icon(Icons.account_box_rounded, color: Colors.blue.shade700,) : Icon(Icons.person_add, color: Colors.blue.shade700)
+                    Container(
+                      padding: EdgeInsets.all(5) ,
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Color(0xFF5B9FDE), width: 1)
+                      ),
+                      child: Icon(Icons.account_box_outlined, size: 20, color: Colors.blue.shade700,)
+                    ) : 
+                    Container(
+                      padding: EdgeInsets.all(5) ,
+                      decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Color(0xFF5B9FDE), width: 1)
+                      ),
+                      child: Icon(Icons.person_add_outlined, size: 20, color: Colors.blue.shade700)
+                    )
                   )
                 ) : null,
                 onTap: (){
@@ -73,7 +98,8 @@ class ListUser extends StatelessWidget {
                   );
                   }
                 }
-              ), 
+              ),
+              Divider() 
             ]),
           ),
         );
@@ -81,7 +107,7 @@ class ListUser extends StatelessWidget {
     );
   }
 
-   int isFriend(String name, FriendsModel friends){
+  int isFriend(String name, FriendsModel friends){
     return friends.friends.indexWhere((element) => element.name == name);
   }
   

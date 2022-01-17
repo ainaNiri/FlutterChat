@@ -1,4 +1,3 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/screens/chatDetailPage/messagePage.dart';
@@ -77,7 +76,7 @@ class ConversationList extends StatelessWidget{
                     title: Text(this.friends.friends[index].name, style: TextStyle(
                         color: textPrimaryColor,
                         fontSize: 16, 
-                        fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.bold : FontWeight.w500
+                        fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.w500 : FontWeight.bold
                       )                 
                     ),                                     
                     subtitle:  Container(
@@ -88,13 +87,13 @@ class ConversationList extends StatelessWidget{
                         style: TextStyle(
                           fontSize: 14, 
                           color: textSecondaryColor, 
-                          fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.bold : FontWeight.normal
+                          fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.normal : FontWeight.bold
                         )                                                                  
                       )                                                                                                                                       
                     ),                                                      
                     trailing: Text(
                       getDate(this.friends.friends[index].lastMessageTime),
-                      style: TextStyle(color: textSecondaryColor ,fontSize: 13, fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.bold : FontWeight.normal)                                            
+                      style: TextStyle(color: textSecondaryColor ,fontSize: 13, fontWeight: this.friends.friends[index].lastMessageType == true ? FontWeight.normal : FontWeight.bold)                                            
                     )                                                                                                                    
                   ),
                 ),

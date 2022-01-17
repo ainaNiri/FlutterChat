@@ -3,11 +3,9 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' hide Priority;
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:myapp/models/chatMembersModel.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/models/messageModel.dart';
 import 'package:myapp/models/chatUsersModel.dart';
@@ -21,6 +19,7 @@ import 'package:myapp/utilities/function.dart';
 import 'package:myapp/utilities/notifications.dart';
 import 'package:myapp/widgets/dialog.dart';
 import 'package:myapp/widgets/hero.dart';
+import 'package:myapp/widgets/routeAnimation.dart';
 import 'package:myapp/widgets/userAvatar.dart';
 import 'dart:async';
 
@@ -46,18 +45,13 @@ class _ChatDetailPage extends State<ChatDetailPage> {
   late final keyboardVisibilityController = KeyboardVisibilityController();
   bool _needsScroll = false;
   
-  void initState(){
+  void initState() {
     super.initState();
-    print("ok");
-    FirebaseDatabase.instance.reference().child("chats/chat_lastMessage").child("${widget.id}/${currentUser.id}").remove();
-    // FirebaseMessaging.instance
-    //     .getInitialMessage()
-    //     .then((RemoteMessage? message) {
-    //   if (message != null) {
-    //     Navigator.pushNamed(context, '/message',
-    //         arguments: MessageArguments(message, true));
-    //   }
-    // });
+    _setRead();
+  }
+
+  Future<void> _setRead() async {
+    await FirebaseDatabase.instance.reference().child("chats/chat_lastMessage").child("${widget.id}/${currentUser.id}").set(true);
   }
 
   void dispose(){
@@ -66,8 +60,8 @@ class _ChatDetailPage extends State<ChatDetailPage> {
     super.dispose();
   }
 
-  Future<void> _postInit() async {
-    await Future.delayed(Duration(milliseconds: 100));
+  void _postInit() async {
+    await Future.delayed(Duration(milliseconds: 50));
   _controller.jumpTo(_controller.position.maxScrollExtent);
   }
 
@@ -86,7 +80,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
       backgroundColor: kPrimaryColor,
       resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          elevation: 0,
+          elevation: 1,
           automaticallyImplyLeading: false,
           backgroundColor: inputColor,
           flexibleSpace: SafeArea(
@@ -97,7 +91,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: Icon(Icons.arrow_back, color: iconColor),
+                  icon: Icon(Icons.arrow_back, color: iconSecondaryColor),
                 ),
                 SizedBox(width: 2),                 
                 IconButton(
@@ -112,9 +106,8 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                   onPressed: () {
                     var friends = context.read<FriendsModel>();
                     if(widget.id.startsWith("grp"))
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(builder: (context) => OptionsPage(chatId: widget.id, chatName: widget.friend.name, chatImage:  widget.friend.image))
+                       Navigator.of(context).push(
+                        createRoute(OptionsPage(chatId: widget.id, chatName: widget.friend.name, chatImage: widget.friend.image))
                       );
                     else 
                     Navigator.push(
@@ -143,22 +136,16 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                 ),
                 if(widget.id.startsWith("grp"))
                   IconButton(
-                    onPressed: () => Navigator.push(
-                      context, 
-                      MaterialPageRoute(builder: (context) => 
-                        ChangeNotifierProvider(create: (_) => 
-                          ChatMembersModel(widget.id) ,child: AddFriendsToChat(chatId: widget.id)
-                        )                       
-                      )
+                    onPressed: () => Navigator.of(context).push(
+                      createRoute(AddFriendsToChat(chatId: widget.id))                       
                     ),
                     splashRadius: 20.0, 
                     icon: Icon(Icons.person_add, color: iconColor)
                   ),
                 if(widget.id.startsWith("grp"))
                   IconButton(
-                    onPressed: () => Navigator.push(
-                      context, 
-                      MaterialPageRoute(builder: (context) => OptionsPage(chatId: widget.id, chatName: widget.friend.name, chatImage:  widget.friend.image))
+                    onPressed: () => Navigator.of(context).push(
+                        createRoute(OptionsPage(chatId: widget.id, chatName: widget.friend.name, chatImage: widget.friend.image))
                     ),
                     splashRadius: 20.0,
                     icon: Icon(Icons.meeting_room, color: iconColor)
@@ -288,10 +275,12 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                           SizedBox(width: 15),
                           FloatingActionButton(
                             onPressed: ()async{
+                              showNotification();
                               if(messageController.text.trim().isNotEmpty){
                                 await addData(messageController.text, null);
-                                sendPushMessage(Provider.of<FriendsModel>(context, listen: false).whereId(widget.id).token, widget.id, widget.friend.name, messageController.text);                     
-                                messageController.text = "";
+                                print("ok");
+                                //await sendPushMessage(Provider.of<FriendsModel>(context, listen: false).whereId(widget.friend.id).token, widget.id, messageController.text, currentUser.id, currentUser.name, currentUser.image);                     
+                                messageController.clear();
                                 if(mounted){
                                   setState((){
                                     _needsScroll = true;
@@ -333,7 +322,7 @@ class _ChatDetailPage extends State<ChatDetailPage> {
     'userSender': currentUser.name,
     });
 
-    await db.child("chats/chat_lastMessage").child(widget.id).set({widget.friend.id : true});
+    await db.child("chats/chat_lastMessage").child(widget.id).set({currentUser.id: true});
 
     if(data.startsWith("https"))
     {

@@ -13,6 +13,7 @@ import 'package:myapp/utilities/notifications.dart';
 import 'dart:io';
 
 import 'package:myapp/widgets/loadingDialog.dart';
+import 'package:myapp/widgets/routeAnimation.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -62,6 +63,7 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
   @override
   void initState() {
     super.initState();
+    initNotification();
     getNotifications(context);
   }
 
@@ -170,7 +172,7 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
                               Navigator.of(context).pop();
                               await Future.delayed(Duration(milliseconds: 600));
                               if (_formKey.currentState!.validate() && !_error1 && !_error2) {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
+                                 Navigator.push(context, createRoute(ActualityPage(index: 0)));
                               }
                               else{
                                 setState((){_error2 = false;});
@@ -196,8 +198,7 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
                                         await _signInWithGoogle();
                                         Navigator.of(context).pop();
                                         await Future.delayed(Duration(milliseconds: 600));
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
-                                                        
+                                        Navigator.of(context).push(createRoute(ActualityPage(index: 0)));                                                       
                                       },
                                       icon:  Container(
                                         width: 20,
@@ -213,8 +214,7 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
                                         await _signInWithFacebook();
                                         Navigator.of(context).pop();
                                         await Future.delayed(Duration(milliseconds: 600));
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => ActualityPage(index: 0)));
-                                                        
+                                         Navigator.push(context, createRoute(ActualityPage(index: 0)));                                                      
                                       },
                                       icon:  Icon(Icons.facebook_rounded, color: Colors.white,),
                                       label: Text("Facebook", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),

@@ -1,5 +1,4 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/utilities/constants.dart';
@@ -47,7 +46,18 @@ class _ActualityPage extends State<ActualityPage>{
         _scaffoldKey
       ),
       drawer: buildDrawer(context),
-      body: _widgetOptions.elementAt(widget.index ?? 0),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: <Color>[Colors.indigo.shade600, Colors.indigo.shade300]),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(25), topRight: Radius.circular(25)),
+          child: Container(
+            color: kPrimaryColor,
+            child: _widgetOptions.elementAt(widget.index ?? 0)
+          ),
+        )
+      ),
       bottomNavigationBar: BottomNavigationBar(
         elevation: 10,
         unselectedItemColor: darkMode ? Colors.white : Colors.black,

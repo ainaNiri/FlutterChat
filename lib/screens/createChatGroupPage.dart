@@ -1,11 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:myapp/models/chatMembersModel.dart';
 import 'package:myapp/screens/chatDetailPage/addFriendsToChatPage.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/utilities/firebaseStorage.dart';
-import 'package:provider/provider.dart';
 
 class CreateChatGroupPage extends StatefulWidget {
   const CreateChatGroupPage({ Key? key }) : super(key: key);
@@ -30,10 +28,20 @@ class _CreateChatGroupPageState extends State<CreateChatGroupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kPrimaryColor,
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: inputColor,
+        elevation: 1,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          color: iconColor,
+          onPressed: () => Navigator.of(context).pop()
+        ),
+        title: Text("Create group", style: TextStyle(color: textPrimaryColor),),
+      ),
       body: Container(
-        height: MediaQuery.of(context).size.height,
         padding: EdgeInsets.all(20),
-        margin: EdgeInsets.only(top: 50),
+        margin: EdgeInsets.only(top: 40),
         child: Column(
           children: [
             Center(
@@ -64,7 +72,7 @@ class _CreateChatGroupPageState extends State<CreateChatGroupPage> {
             Form(
               key: _formKey,
               child: Container(
-                height: MediaQuery.of(context).size.height - 260,
+                height: MediaQuery.of(context).size.height - 360,
                 child: Column(
                   children: [
                     TextFormField(
@@ -83,10 +91,9 @@ class _CreateChatGroupPageState extends State<CreateChatGroupPage> {
                       style: TextStyle(color: textPrimaryColor),
                       controller: nameController,
                     ),
-                    Flexible(
-                      child: ChangeNotifierProvider(create: (_) => 
-                        ChatMembersModel("") ,child: AddFriendsToChat(formkey: _formKey, chatId: "", chatName: nameController.text, chatImage: _image, isNew: true,)
-                      )
+                    SizedBox(height: 10,),
+                    Expanded(
+                      child: AddFriendsToChat(formkey: _formKey, chatId: "", chatName: nameController.text, chatImage: _image, isNew: true,)
                     )
                   ]
                 ),

@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/models/chatMembersModel.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/models/friendModel.dart';
 import 'package:myapp/utilities/firebaseStorage.dart';
@@ -27,60 +26,69 @@ class _AddFriendsToChatState extends State<AddFriendsToChat> {
 
   @override
   Widget build(BuildContext context) {
-    var chatMembers = context.watch<ChatMembersModel>();
+    var friendsModel = context.watch<FriendsModel>();
     return Material(
+      color: kPrimaryColor,
       child: Container(
         padding: EdgeInsets.all(widget.isNew ? 0.0 : 10),
-        margin: EdgeInsets.only(top: 10),
+        margin: EdgeInsets.only(top: 20, bottom: widget.isNew ? 0.0 : 20),
+        color: kPrimaryColor,
         child: Column(
           children: [
             Expanded(
-              child: Consumer<FriendsModel>(
-                builder: (context, model, child){
-                  if(model.isEmpty())
-                    return Center(child: CircularProgressIndicator());
-                  else
-                    return ListView.builder(
-                      itemCount: model.length(),
-                      shrinkWrap: true,
-                      physics: BouncingScrollPhysics(),
-                      itemBuilder: (context, index){
-                        if(!model.friends[index].isInChat(chatMembers) && !model.friends[index].chatId.startsWith("grp"))
-                          return CheckboxListTile(
-                            activeColor: Colors.blue,
-                            value: selectedFriendsId.contains(model.friends[index].id),
-                            title: Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundImage: NetworkImage(model.friends[index].image),
-                                  maxRadius: 30,
-                                ),
-                                SizedBox(width: MediaQuery.of(context).size.width * 0.04,),
-                                Text(
-                                  model.friends[index].name,
-                                  style: TextStyle(color: textPrimaryColor)
-                                )
-                              ],
-                            ),
-                            onChanged: (selected){
-                              setState((){
-                                if (selected == true) {
-                                  setState(() {
-                                    selectedFriendsId.add(model.friends[index].id);
-                                  });
-                                }
-                                else{
-                                  setState(() {
-                                    selectedFriendsId.remove(model.friends[index].id);
-                                  });
-                                }
-                              });
-                            },
-                          );
-                        else
-                          return Container();
-                      },
-                    );
+              child: FutureBuilder(
+                future: FirebaseDatabase.instance.reference().child("chats/members").child(widget.chatId).once(),
+                builder: (context, AsyncSnapshot<DataSnapshot> snapshot){
+                  if(snapshot.hasData || widget.isNew){
+                    if(snapshot.data != null){
+                      Map<dynamic, dynamic> members = snapshot.data!.value;
+                      return ListView.builder(
+                        itemCount: friendsModel.length,
+                        shrinkWrap: true,
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (context, index){
+                          if(!friendsModel.friends[index].isInChat(members) && !friendsModel.friends[index].chatId.startsWith("grp"))
+                            return CheckboxListTile(
+                              activeColor: Colors.blue,
+                              value: selectedFriendsId.contains(friendsModel.friends[index].id),
+                              title: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundImage: NetworkImage(friendsModel.friends[index].image),
+                                    maxRadius: 30,
+                                  ),
+                                  SizedBox(width: MediaQuery.of(context).size.width * 0.04,),
+                                  Text(
+                                    friendsModel.friends[index].name,
+                                    style: TextStyle(color: textPrimaryColor)
+                                  )
+                                ],
+                              ),
+                              onChanged: (selected){
+                                setState((){
+                                  if (selected == true) {
+                                    setState(() {
+                                      selectedFriendsId.add(friendsModel.friends[index].id);
+                                    });
+                                  }
+                                  else{
+                                    setState(() {
+                                      selectedFriendsId.remove(friendsModel.friends[index].id);
+                                    });
+                                  }
+                                });
+                              },
+                            );
+                          else
+                            return Container();
+                        },
+                      );
+                    }
+                    return Center(child: CircularProgressIndicator()); 
+                  }
+                  else{ 
+                    return Center(child: CircularProgressIndicator());                   
+                  }
                 }
               ),
             ),

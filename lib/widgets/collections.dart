@@ -20,15 +20,26 @@ class Collection extends StatelessWidget {
       height: 200,
       margin: EdgeInsets.only(bottom: 15, top: 20),
       padding: EdgeInsets.only(left: 10, right: 10),
+      color: kPrimaryColor,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Row(
-            children: [
-              Icon(Icons.image, size: 20, color: iconSecondaryColor,),
-              SizedBox(width: 15,),
-              Material(child: Text("Photos", style: TextStyle(color: textPrimaryColor, fontSize: 15, fontWeight: FontWeight.w300),)),
-            ],
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10), 
+                    color: Color(0xFF5B9FDE)
+                  ),
+                  child: Icon(Icons.image, size: 15, color: kPrimaryColor,)
+                ),
+                SizedBox(width: 13,),
+                Material(color: kPrimaryColor,child: Text("Photos", style: TextStyle(color: Color(0xFF5B9FDE), fontSize: 15, fontWeight: FontWeight.w300),)),
+              ],
+            ),
           ),
           Container(
             height: 150,
