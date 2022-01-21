@@ -6,7 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' hide Priority;
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:myapp/models/friendModel.dart';
+import 'package:myapp/providers/friendModel.dart';
 import 'package:myapp/models/messageModel.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/screens/chatDetailPage/optionsPage.dart';

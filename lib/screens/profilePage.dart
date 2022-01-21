@@ -2,7 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/utilities/constants.dart';
-import 'package:myapp/models/listModel.dart';
+import 'package:myapp/providers/listModel.dart';
 import 'package:myapp/screens/chatDetailPage/messagePage.dart';
 import 'package:myapp/widgets/collections.dart';
 import 'package:myapp/widgets/editProfile.dart';
@@ -79,7 +79,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         MaterialPageRoute(builder: (context){ return ImageView(image: widget.person.image, index: "",);})
                       ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 15),
                     Text(widget.person.name ,style: TextStyle(color: textPrimaryColor, fontWeight: FontWeight.bold, fontSize: 20)),                   
                     if(currentUser.id == widget.person.id)
                       Align(

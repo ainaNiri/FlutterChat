@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/utilities/constants.dart';
-import 'package:myapp/models/friendModel.dart';
+import 'package:myapp/providers/friendModel.dart';
 import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:myapp/utilities/function.dart';
 import 'package:provider/provider.dart';

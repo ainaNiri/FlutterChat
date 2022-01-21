@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/models/friendModel.dart';
+import 'package:myapp/providers/friendModel.dart';
 import 'package:myapp/screens/chatDetailPage/messagePage.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/utilities/date.dart';

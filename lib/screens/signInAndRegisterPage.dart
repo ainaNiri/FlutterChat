@@ -7,7 +7,6 @@ import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/screens/actualityPage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-//import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:myapp/utilities/constants.dart';
 import 'package:myapp/utilities/notifications.dart';
 import 'dart:io';
@@ -92,158 +91,155 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
                 SizedBox(height: 5,),
                 Form(
                 key: _formKey,
-                child: ScaleTransition(
-                  scale: _animation,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width-40,
-                      padding: EdgeInsets.only(top: 0, bottom: 10, left: 20, right: 20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                      children: <Widget>[
-                        SizedBox(height: signIn ? 50 : 35,),
-                          _buildInput("Email",Icons.mail_outlined, emailController, true),
-                          if(!signIn)
-                            SizedBox(height: 20,),
-                          if(!signIn)
-                            _buildInput("Name",Icons.person_outlined,  nameController, false),
-                          SizedBox(height: 20,),
-                          TextFormField(
-                            style: TextStyle(color: Colors.black),
-                            validator: (value) {
-                              if(value!.isEmpty){
-                                return "Please enter a password";
-                              }
-                              else if(_error2){
-                                return "Wrong password";
-                              }
-                              
-                              return null;
-                            },
-                            controller: passwordController,
-                            obscureText: !this._showPassword,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: inputColor,
-                              enabledBorder: border,
-                              focusedBorder: border,
-                              errorBorder: border,
-                              focusedErrorBorder: border,
-                              prefixIcon: Icon(Icons.security_outlined, color: iconColor),
-                              hintText: "Password",
-                              hintStyle: TextStyle(color: Colors.grey[400]),                                     
-                              suffixIcon: IconButton(
-                                padding: EdgeInsets.all(0),
-                                icon: Icon(
-                                  Icons.remove_red_eye,
-                                  color: this._showPassword ? Colors.blue : iconColor
-                                ),
-                                onPressed: () => setState(() => this._showPassword = !this._showPassword),
-                                splashRadius: 15,
-                              ),
-                              
+                child: Container(
+                  width: MediaQuery.of(context).size.width-40,
+                  padding: EdgeInsets.only(top: 0, bottom: 10, left: 20, right: 20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                  children: <Widget>[
+                    SizedBox(height: signIn ? 50 : 35,),
+                      _buildInput("Email",Icons.mail_outlined, emailController, true),
+                      if(!signIn)
+                        SizedBox(height: 20,),
+                      if(!signIn)
+                        _buildInput("Name",Icons.person_outlined,  nameController, false),
+                      SizedBox(height: 20,),
+                      TextFormField(
+                        style: TextStyle(color: Colors.black),
+                        validator: (value) {
+                          if(value!.isEmpty){
+                            return "Please enter a password";
+                          }
+                          else if(_error2){
+                            return "Wrong password";
+                          }
+                          
+                          return null;
+                        },
+                        controller: passwordController,
+                        obscureText: !this._showPassword,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: inputColor,
+                          enabledBorder: border,
+                          focusedBorder: border,
+                          errorBorder: border,
+                          focusedErrorBorder: border,
+                          prefixIcon: Icon(Icons.security_outlined, color: iconColor),
+                          hintText: "Password",
+                          hintStyle: TextStyle(color: Colors.grey[400]),                                     
+                          suffixIcon: IconButton(
+                            padding: EdgeInsets.all(0),
+                            icon: Icon(
+                              Icons.remove_red_eye,
+                              color: this._showPassword ? Colors.blue : iconColor
                             ),
+                            onPressed: () => setState(() => this._showPassword = !this._showPassword),
+                            splashRadius: 15,
                           ),
-                          SizedBox(height: 15,),
-                          if(signIn)Align(
-                            alignment: Alignment.bottomRight,
-                            child: Text("Forgotten password?", style: TextStyle(fontFamily: "arial", color: Colors.blueAccent)),
-                          ),
-                          if(!signIn) SizedBox(height: 10,),
-                          if(!signIn)
-                          ElevatedButton.icon(
-                            onPressed: () async{
-                              _image = await getImage();
-                            },
-                            icon: Icon(Icons.photo_album, size: 25,), 
-                            label: Text("Add photo", style: TextStyle(fontSize: 17, fontFamily: "ubuntu")),
-                            style: ButtonStyle(
-                              shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
-                              backgroundColor: MaterialStateProperty.resolveWith(getColor),
-                              fixedSize: MaterialStateProperty.all(Size(350, 50))
-                            )
-                          ),
-                          SizedBox(height: 25),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              showLoadingIndicator(context);
-                              signIn ? await _signIn() : await _register();
-                              Navigator.of(context).pop();
-                              await Future.delayed(Duration(milliseconds: 600));
-                              if (_formKey.currentState!.validate() && !_error1 && !_error2) {
-                                 Navigator.push(context, createRoute(ActualityPage(index: 0)));
-                              }
-                              else{
-                                setState((){_error2 = false;});
-                              }                  
-                            },
-                            icon: Icon(Icons.login_outlined, color: Colors.white,), 
-                            label: Text(signIn ? "Login" : "Register", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-                            style: buttonStyle
-                          ),
-                          SizedBox(height: 20),
-                          Text("------------------ OR -------------------"),
-                          SizedBox(height: 20),
-                          ScaleTransition(
-                            scale: _animation,
-                            child: Column(
+                          
+                        ),
+                      ),
+                      SizedBox(height: 15,),
+                      if(signIn)Align(
+                        alignment: Alignment.bottomRight,
+                        child: Text("Forgotten password?", style: TextStyle(fontFamily: "arial", color: Colors.blueAccent)),
+                      ),
+                      if(!signIn) SizedBox(height: 10,),
+                      if(!signIn)
+                      ElevatedButton.icon(
+                        onPressed: () async{
+                          _image = await getImage();
+                        },
+                        icon: Icon(Icons.photo_album, size: 25,), 
+                        label: Text("Add photo", style: TextStyle(fontSize: 17, fontFamily: "ubuntu")),
+                        style: ButtonStyle(
+                          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
+                          backgroundColor: MaterialStateProperty.resolveWith(getColor),
+                          fixedSize: MaterialStateProperty.all(Size(350, 50))
+                        )
+                      ),
+                      SizedBox(height: 25),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          showLoadingIndicator(context);
+                          signIn ? await _signIn() : await _register();
+                          Navigator.of(context).pop();
+                          await Future.delayed(Duration(milliseconds: 600));
+                          if (_formKey.currentState!.validate() && !_error1 && !_error2) {
+                             Navigator.push(context, createRoute(ActualityPage(index: 0)));
+                          }
+                          else{
+                            setState((){_error2 = false;});
+                          }                  
+                        },
+                        icon: Icon(Icons.login_outlined, color: Colors.white,), 
+                        label: Text(signIn ? "Login" : "Register", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                        style: buttonStyle
+                      ),
+                      SizedBox(height: 20),
+                      Text("------------------ OR -------------------"),
+                      SizedBox(height: 20),
+                      ScaleTransition(
+                        scale: _animation,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    ElevatedButton.icon(
-                                      onPressed: () async {
-                                        showLoadingIndicator(context);
-                                        await _signInWithGoogle();
-                                        Navigator.of(context).pop();
-                                        await Future.delayed(Duration(milliseconds: 600));
-                                        Navigator.of(context).push(createRoute(ActualityPage(index: 0)));                                                       
-                                      },
-                                      icon:  Container(
-                                        width: 20,
-                                        height: 20,
-                                        child: Image.asset("assets/images/google.png", fit: BoxFit.cover)
-                                      ),
-                                      label: Text("Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                                      style: smallButtonStyle(Colors.red.shade400)
-                                    ),
-                                    ElevatedButton.icon(
-                                      onPressed: () async {
-                                        showLoadingIndicator(context);
-                                        await _signInWithFacebook();
-                                        Navigator.of(context).pop();
-                                        await Future.delayed(Duration(milliseconds: 600));
-                                         Navigator.push(context, createRoute(ActualityPage(index: 0)));                                                      
-                                      },
-                                      icon:  Icon(Icons.facebook_rounded, color: Colors.white,),
-                                      label: Text("Facebook", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                                      style: smallButtonStyle(Colors.lightBlue)
-                                    ),
-                                  ],
+                                ElevatedButton.icon(
+                                  onPressed: () async {
+                                    showLoadingIndicator(context);
+                                    await _signInWithGoogle();
+                                    Navigator.of(context).pop();
+                                    await Future.delayed(Duration(milliseconds: 600));
+                                    Navigator.of(context).push(createRoute(ActualityPage(index: 0)));                                                       
+                                  },
+                                  icon:  Container(
+                                    width: 20,
+                                    height: 20,
+                                    child: Image.asset("assets/images/google.png", fit: BoxFit.cover)
+                                  ),
+                                  label: Text("Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                                  style: smallButtonStyle(Colors.red.shade400)
+                                ),
+                                ElevatedButton.icon(
+                                  onPressed: () async {
+                                    showLoadingIndicator(context);
+                                    await _signInWithFacebook();
+                                    Navigator.of(context).pop();
+                                    await Future.delayed(Duration(milliseconds: 600));
+                                     Navigator.push(context, createRoute(ActualityPage(index: 0)));                                                      
+                                  },
+                                  icon:  Icon(Icons.facebook_rounded, color: Colors.white,),
+                                  label: Text("Facebook", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                                  style: smallButtonStyle(Colors.lightBlue)
                                 ),
                               ],
                             ),
-                          ),
-                          SizedBox(height: 20,),
-                          if(signIn)Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text("Don't have an account? "),
-                              TextButton(
-                                child: Text("Sign Up", style: TextStyle(color: Colors.red)),
-                                onPressed: () => setState(() => signIn = false),
-                              ),
-                            ]
-                          )else
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20,),
+                      if(signIn)Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text("Don't have an account? "),
                           TextButton(
-                            child: Text("Sign In", style: TextStyle(color: Colors.red)),
-                            onPressed: () => setState(() => signIn = true),
+                            child: Text("Sign Up", style: TextStyle(color: Colors.red)),
+                            onPressed: () => setState(() => signIn = false),
                           ),
-                        ]               
-                      )                
+                        ]
+                      )else
+                      TextButton(
+                        child: Text("Sign In", style: TextStyle(color: Colors.red)),
+                        onPressed: () => setState(() => signIn = true),
+                      ),
+                    ]               
+                  )                
                   )
-                )
               )
             ]
           )
