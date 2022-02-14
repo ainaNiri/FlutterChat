@@ -11,7 +11,7 @@ import 'package:myapp/models/messageModel.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/screens/chatDetailPage/optionsPage.dart';
 import 'package:myapp/screens/profilePage.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 import 'package:myapp/utilities/date.dart';
 import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:myapp/screens/chatDetailPage/addFriendsToChatPage.dart';

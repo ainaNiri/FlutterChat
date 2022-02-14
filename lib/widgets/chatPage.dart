@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/screens/createChatGroupPage.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 import 'package:myapp/providers/friendModel.dart';
 import 'package:myapp/widgets/conversationList.dart';
 import 'package:myapp/widgets/routeAnimation.dart';

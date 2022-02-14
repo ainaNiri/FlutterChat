@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/chatDetailPage/chatRoomMembers.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 import 'package:myapp/widgets/editProfile.dart';
 import 'package:myapp/widgets/hero.dart';
 

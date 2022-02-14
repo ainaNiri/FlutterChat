@@ -7,7 +7,7 @@ import 'package:myapp/utilities/firebaseStorage.dart';
 import 'package:myapp/models/chatUsersModel.dart';
 import 'package:myapp/screens/actualityPage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 import 'package:myapp/utilities/notifications.dart';
 import 'dart:io';
 

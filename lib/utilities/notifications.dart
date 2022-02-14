@@ -172,18 +172,18 @@ void getNotifications(BuildContext context){
 
 void showNotification(){
   flutterLocalNotificationsPlugin.show(
-        3,
-        "title",
-        "This is a body",
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel',
-            'High Importance Notifications', 
-            'This channel is used for important notifications.', 
-            priority: Priority.high,
-          ),
-        )
-      );
+    3,
+    "title",
+    "This is a body",
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        'high_importance_channel',
+        'High Importance Notifications', 
+        'This channel is used for important notifications.', 
+        priority: Priority.high,
+      ),
+    )
+  );
 }
 
 

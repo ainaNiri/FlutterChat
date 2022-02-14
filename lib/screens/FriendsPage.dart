@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 import 'package:myapp/providers/friendModel.dart';
 import 'package:myapp/widgets/userList.dart';
 import 'package:provider/provider.dart';

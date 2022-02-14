@@ -1,7 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/models/chatUsersModel.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 import 'package:myapp/screens/FriendsPage.dart';
 import 'package:myapp/customIcon/app_icons.dart';
 import 'package:myapp/screens/notificationsPage.dart';

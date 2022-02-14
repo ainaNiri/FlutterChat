@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/providers/friendModel.dart';
 import 'package:myapp/screens/chatDetailPage/messagePage.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 import 'package:myapp/utilities/date.dart';
 import 'package:myapp/widgets/userAvatar.dart';
 

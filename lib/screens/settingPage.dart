@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/actualityPage.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({ Key? key }) : super(key: key);

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/chatDetailPage/addFriendsToChatPage.dart';
-import 'package:myapp/utilities/constants.dart';
+import 'package:myapp/utilities/variables.dart';
 import 'package:myapp/utilities/firebaseStorage.dart';
 
 class CreateChatGroupPage extends StatefulWidget {
