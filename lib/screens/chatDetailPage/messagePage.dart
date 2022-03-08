@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' hide Priority;
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:myapp/screens/videoCall.dart';
 import 'package:myapp/providers/friendModel.dart';
 import 'package:myapp/models/messageModel.dart';
 import 'package:myapp/models/chatUsersModel.dart';
@@ -149,7 +150,15 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                     ),
                     splashRadius: 20.0,
                     icon: Icon(Icons.meeting_room, color: iconColor)
-                  )
+                  ),
+                IconButton(
+                  icon: widget.id.startsWith("grp") ? Icon(Icons.video_call_outlined, color: iconColor) : Icon(Icons.call, color: iconColor),
+                  onPressed: (){
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (BuildContext context) => VideoConference(roomId: widget.id),)
+                    );
+                  },
+                )
                 ]
               )
             )
@@ -275,12 +284,11 @@ class _ChatDetailPage extends State<ChatDetailPage> {
                           SizedBox(width: 15),
                           FloatingActionButton(
                             onPressed: ()async{
-                              showNotification();
                               if(messageController.text.trim().isNotEmpty){
-                                await addData(messageController.text, null);
-                                print("ok");
-                                //await sendPushMessage(Provider.of<FriendsModel>(context, listen: false).whereId(widget.friend.id).token, widget.id, messageController.text, currentUser.id, currentUser.name, currentUser.image);                     
+                                String messageContent = messageController.text;
                                 messageController.clear();
+                                await addData(messageController.text, null);
+                                await sendPushMessage(Provider.of<FriendsModel>(context, listen: false).whereId(widget.friend.id).token, widget.id, messageContent, currentUser.id, currentUser.name, currentUser.image);                     
                                 if(mounted){
                                   setState((){
                                     _needsScroll = true;

@@ -96,7 +96,7 @@ Future<void> sendPushMessage(String? token, String chatId, String message, Strin
     }
 
     try {
-      final response = await Dio().post('http://192.168.43.67:8080/api/firebase/send_notification', 
+      final response = await Dio().post('http://192.168.0.133:8080/api/firebase/send_notification', 
         data: {'token': token, 'title': name, 'chat_id' : chatId, 'id': myId, 'body': message, 'image': image},
         options: Options(method: 'POST', headers: <String, dynamic>{},
         followRedirects: false,
@@ -121,8 +121,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void getNotifications(BuildContext context){
 
-
-
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
@@ -138,6 +136,7 @@ void getNotifications(BuildContext context){
   });
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("ok");
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification!.android;
     if (notification != null && android != null && !kIsWeb) {
@@ -170,20 +169,5 @@ void getNotifications(BuildContext context){
   });
 }
 
-void showNotification(){
-  flutterLocalNotificationsPlugin.show(
-    3,
-    "title",
-    "This is a body",
-    NotificationDetails(
-      android: AndroidNotificationDetails(
-        'high_importance_channel',
-        'High Importance Notifications', 
-        'This channel is used for important notifications.', 
-        priority: Priority.high,
-      ),
-    )
-  );
-}
 
 

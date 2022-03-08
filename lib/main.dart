@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:myapp/providers/friendModel.dart';
 import 'package:myapp/providers/listModel.dart';
 import 'package:myapp/screens/signInAndRegisterPage.dart';
-import 'package:myapp/screens/videoCall.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
