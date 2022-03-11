@@ -20,7 +20,9 @@ class _VideoConferenceState extends State<VideoConference> {
   final _room = 'ion';
   final _uid = Uuid().v4();
   bool _mute = false;
+  bool screenShare = false;
   late RTC _rtc;
+
   @override
   void initState() {
     super.initState();
@@ -83,124 +85,127 @@ class _VideoConferenceState extends State<VideoConference> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ion-sfu',
-      home: Scaffold(
-        backgroundColor: Colors.black54,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            elevation: 3,
-            title: Text('Video Call', style: TextStyle(color: Colors.white)),
-            centerTitle: true,
-          ),
-          body: OrientationBuilder(builder: (context, orientation) {
-            return Stack(
-              children: [
-                Container(                 
-                  child: Center(
-                    child: SizedBox(
-                      child: RTCVideoView(_localRenderer, mirror: true,)
-                    ),
-                  )
-                ),
-                Positioned(
-                  right: 20,
-                  bottom: 20,
-                  child: Container(
-                    width: (1.4 * MediaQuery.of(context).size.width)/2,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
-                            backgroundColor: MaterialStateProperty.all(Color.fromARGB(255, 72, 70, 70)),
-                            minimumSize: MaterialStateProperty.all(Size(60, 60)),
-                          ),
-                          onPressed:() async{
-                            try{
-                              await Helper.switchCamera(_localRenderer.srcObject!.getVideoTracks()[0]);
-                              /*setState(() {
-                                _mirror = !_mirror;
-                              });*/
-                            }catch(e){
-                              print(e.toString());
-                            }
-                          },
-                          child: Icon(Icons.switch_camera, color: Colors.white,),
-                        ),
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
-                            backgroundColor: MaterialStateProperty.all(Color.fromARGB(255, 72, 70, 70)),
-                            minimumSize: MaterialStateProperty.all(Size(60, 60)),
-                          ),
-                          onPressed:(){
-                            bool enabled = _localRenderer.muted;
-                            MediaStream mediaStream = _localRenderer.srcObject!;
-                            mediaStream.getAudioTracks()[0].enabled = !enabled;
-                            setState((){
-                              _localRenderer.srcObject = mediaStream;
-                              _mute = !_mute;
-                            });
-                          },
-                          child: _mute ? Icon(Icons.mic_off) : Icon(Icons.mic, color: Colors.white,),
-                        ),
-                         ElevatedButton(
-                          style: ButtonStyle(
-                            shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
-                            backgroundColor: MaterialStateProperty.all(Color.fromARGB(255, 72, 70, 70)),
-                            minimumSize: MaterialStateProperty.all(Size(60, 60)),
-                          ),
-                          onPressed:() async{
-                            final mediaConstraints = <String, dynamic>{'audio': true, 'video': true};
-                            try {
-                              var stream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints);
-
-                              _localRenderer.srcObject = stream;
-                              setState(() {
-                                
-                              });
-                            } catch (e) {
-                              print(e.toString());
-                            }
-                          },
-                          child: Icon(Icons.screen_share, color: Colors.white,),
-                        ),
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
-                            backgroundColor: MaterialStateProperty.all(Colors.red),
-                            minimumSize: MaterialStateProperty.all(Size(60, 60)),
-                          ),
-                          child: Icon(Icons.call_end, color: Colors.white),
-                          onPressed: ()async{
-                            await Future.delayed(Duration(seconds: 2));
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    ),
-                  )
-                ),
-                Positioned(
-                  top: 10,
-                  right: 10,
+    return Scaffold(
+      backgroundColor: Colors.black54,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          elevation: 3,
+          title: Text('Video Call', style: TextStyle(color: Colors.white)),
+          centerTitle: true,
+        ),
+        body: OrientationBuilder(builder: (context, orientation) {
+          return Stack(
+            children: [
+              Container(                 
+                child: Center(
+                  child: SizedBox(
+                    child: RTCVideoView(_localRenderer)
+                  ),
+                )
+              ),
+              Positioned(
+                right: 20,
+                bottom: 20,
+                child: Container(
+                  width: (1.4 * MediaQuery.of(context).size.width)/2,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ..._remoteRenderers.map((remoteRenderer) {
-                        return SizedBox(
-                          width: 160,
-                          height: 120,
-                          child: RTCVideoView(remoteRenderer,));
-                      }).toList(),
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
+                          backgroundColor: MaterialStateProperty.all(Color.fromARGB(255, 72, 70, 70)),
+                          minimumSize: MaterialStateProperty.all(Size(60, 60)),
+                        ),
+                        onPressed:() async{
+                          try{
+                            await Helper.switchCamera(_localRenderer.srcObject!.getVideoTracks()[0]);
+                            /*setState(() {
+                              _mirror = !_mirror;
+                            });*/
+                          }catch(e){
+                            print(e.toString());
+                          }
+                        },
+                        child: Icon(Icons.switch_camera, color: Colors.white,),
+                      ),
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
+                          backgroundColor: MaterialStateProperty.all(Color.fromARGB(255, 72, 70, 70)),
+                          minimumSize: MaterialStateProperty.all(Size(60, 60)),
+                        ),
+                        onPressed:(){
+                          bool enabled = _localRenderer.muted;
+                          MediaStream mediaStream = _localRenderer.srcObject!;
+                          mediaStream.getAudioTracks()[0].enabled = !enabled;
+                          setState((){
+                            _localRenderer.srcObject = mediaStream;
+                            _mute = !_mute;
+                          });
+                        },
+                        child: _mute ? Icon(Icons.mic_off) : Icon(Icons.mic, color: Colors.white,),
+                      ),
+                        ElevatedButton(
+                        style: ButtonStyle(
+                          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
+                          backgroundColor: MaterialStateProperty.all(Color.fromARGB(255, 72, 70, 70)),
+                          minimumSize: MaterialStateProperty.all(Size(60, 60)),
+                        ),
+                        onPressed:() async{
+                          final mediaConstraints = <String, dynamic>{'audio': true, 'video': true};
+                          try {
+                            if(screenShare){
+                              var stream = await LocalStream.getUserMedia(constraints: Constraints.defaults);
+                              _localRenderer.srcObject = stream.stream;
+                            }
+                            else{
+                              var stream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints);
+                              _localRenderer.srcObject = stream;
+                            }
+                                                          
+                            setState(() {
+                              screenShare = !screenShare;
+                            });
+                          } catch (e) {
+                            print(e.toString());
+                          }
+                        },
+                        child: Icon(Icons.screen_share, color: Colors.white,),
+                      ),
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
+                          backgroundColor: MaterialStateProperty.all(Colors.red),
+                          minimumSize: MaterialStateProperty.all(Size(60, 60)),
+                        ),
+                        child: Icon(Icons.call_end, color: Colors.white),
+                        onPressed: ()async{
+                          await Future.delayed(Duration(seconds: 2));
+                          Navigator.of(context).pop();
+                        },
+                      ),
                     ],
                   ),
+                )
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Row(
+                  children: [
+                    ..._remoteRenderers.map((remoteRenderer) {
+                      return SizedBox(
+                        width: 160,
+                        height: 120,
+                        child: RTCVideoView(remoteRenderer,));
+                    }).toList(),
+                  ],
                 ),
-              ],
-            );
-          }
-        )
+              ),
+            ],
+          );
+        }
       )
     );
   }
