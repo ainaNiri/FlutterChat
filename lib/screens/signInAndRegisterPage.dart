@@ -46,6 +46,7 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
     borderRadius: BorderRadius.circular(25),
   );
 
+  bool _error = false;
   bool _error1 = false;
   bool _error2 = false;
   final _formKey = GlobalKey<FormState>();
@@ -316,26 +317,26 @@ class _SignInAndRegisterPage extends State<SignInAndRegisterPage> with TickerPro
     );
   }
 
-  Future<void>_signIn() async{
+  Future<void> _signIn() async{
     try {
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text,
+        email: emailController.text.trim(),
         password: passwordController.text
       );
       currentUser.id = userCredential.user!.uid;
+      _error1 = false;
+      _error2 = false;
       await FirebaseDatabase.instance.reference().child('users/users_profile').child(currentUser.id).once().then((value){currentUser.name = value.value['name'];currentUser.image = value.value['image'];});                      
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        print('No user found for that email.');
-        setState(() {
-          _error1 = true;
-        });
+        print('No user found for that email.');        
+        _error1 = true;       
       } else if (e.code == 'wrong-password') {
-        print('Wrong password provided for that user.');
-        setState(() {
-          _error2 = true;
-        });
+        print('Wrong password provided for that user.');        
+        _error2 = true;
       }
+    }catch(e){
+      print(e);
     }
   }
 
